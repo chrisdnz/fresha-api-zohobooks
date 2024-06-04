@@ -1,0 +1,281 @@
+[
+  {
+    "Sale #": 1284,
+    "Client": "Elena Lopez",
+    "Status": "Completed",
+    "Sale date": "1 May 2024, 4:21pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 395.00"
+  },
+  {
+    "Sale #": 1285,
+    "Client": "Marbely Rivas",
+    "Status": "Completed",
+    "Sale date": "1 May 2024, 4:21pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 950.00"
+  },
+  {
+    "Sale #": 1286,
+    "Client": "Genesis Galeas",
+    "Status": "Completed",
+    "Sale date": "2 May 2024, 9:27am",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 1,050.00"
+  },
+  {
+    "Sale #": 1287,
+    "Client": "Tomi",
+    "Status": "Completed",
+    "Sale date": "2 May 2024, 1:13pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 395.00"
+  },
+  {
+    "Sale #": 1288,
+    "Client": "Susan Escoto",
+    "Status": "Completed",
+    "Sale date": "3 May 2024, 10:58am",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 495.00"
+  },
+  {
+    "Sale #": 1289,
+    "Client": "Michelle Najera",
+    "Status": "Completed",
+    "Sale date": "6 May 2024, 1:42pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 1,300.00"
+  },
+  {
+    "Sale #": 1290,
+    "Client": "Marina Cabrera",
+    "Status": "Completed",
+    "Sale date": "8 May 2024, 8:15am",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 325.00"
+  },
+  {
+    "Sale #": 1291,
+    "Client": "Elda Mejía",
+    "Status": "Completed",
+    "Sale date": "8 May 2024, 11:21am",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 345.00"
+  },
+  {
+    "Sale #": 1292,
+    "Client": "Florencia Lopez",
+    "Status": "Completed",
+    "Sale date": "8 May 2024, 3:21pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 445.00"
+  },
+  {
+    "Sale #": 1293,
+    "Client": "Melania Ruiz",
+    "Status": "Completed",
+    "Sale date": "9 May 2024, 5:12pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 1,400.00"
+  },
+  {
+    "Sale #": 1294,
+    "Client": "Claudia Romero",
+    "Status": "Completed",
+    "Sale date": "9 May 2024, 5:12pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 2,500.00"
+  },
+  {
+    "Sale #": 1295,
+    "Client": "Claudia Romero",
+    "Status": "Completed",
+    "Sale date": "11 May 2024, 7:49am",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 1,150.00"
+  },
+  {
+    "Sale #": 1296,
+    "Client": "Diana Elisa",
+    "Status": "Completed",
+    "Sale date": "11 May 2024, 12:49pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 560.00"
+  },
+  {
+    "Sale #": 1297,
+    "Client": "Marbely Rivas",
+    "Status": "Completed",
+    "Sale date": "11 May 2024, 12:50pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 950.00"
+  },
+  {
+    "Sale #": 1298,
+    "Client": "Stephany Galeas",
+    "Status": "Completed",
+    "Sale date": "17 May 2024, 3:04pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 200.00",
+    "Gross total": "HNL 1,420.00"
+  },
+  {
+    "Sale #": 1299,
+    "Client": "Dennisse Martinez",
+    "Status": "Completed",
+    "Sale date": "18 May 2024, 11:36am",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 595.00"
+  },
+  {
+    "Sale #": 1300,
+    "Client": "Marbely Rivas",
+    "Status": "Completed",
+    "Sale date": "18 May 2024, 11:37am",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 850.00"
+  },
+  {
+    "Sale #": 1301,
+    "Client": "Lesbia Lopez",
+    "Status": "Completed",
+    "Sale date": "18 May 2024, 12:52pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 1,875.00"
+  },
+  {
+    "Sale #": 1302,
+    "Client": "Gabriela Sierra",
+    "Status": "Completed",
+    "Sale date": "18 May 2024, 5:01pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 115.00"
+  },
+  {
+    "Sale #": 1303,
+    "Client": "Itza Duran",
+    "Status": "Completed",
+    "Sale date": "18 May 2024, 5:03pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 850.00"
+  },
+  {
+    "Sale #": 1304,
+    "Client": "Kathya Flores",
+    "Status": "Voided",
+    "Sale date": "19 May 2024, 9:46am",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 1,400.00"
+  },
+  {
+    "Sale #": 1305,
+    "Client": "Kathya Flores",
+    "Status": "Completed",
+    "Sale date": "19 May 2024, 9:46am",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 1,400.00"
+  },
+  {
+    "Sale #": 1306,
+    "Client": "Marbely Rivas",
+    "Status": "Completed",
+    "Sale date": "20 May 2024, 7:08am",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 1,150.00"
+  },
+  {
+    "Sale #": 1307,
+    "Client": "Walk-In",
+    "Status": "Completed",
+    "Sale date": "22 May 2024, 4:37pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 1,000.00"
+  },
+  {
+    "Sale #": 1308,
+    "Client": "Lesbia Lopez",
+    "Status": "Completed",
+    "Sale date": "22 May 2024, 8:41pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 425.00"
+  },
+  {
+    "Sale #": 1309,
+    "Client": "Ana Miranda",
+    "Status": "Completed",
+    "Sale date": "24 May 2024, 10:51am",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 345.00"
+  },
+  {
+    "Sale #": 1310,
+    "Client": "Sindy Proudinat",
+    "Status": "Completed",
+    "Sale date": "26 May 2024, 10:10pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 1,665.00"
+  },
+  {
+    "Sale #": 1311,
+    "Client": "Tomi",
+    "Status": "Completed",
+    "Sale date": "28 May 2024, 2:43pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 770.00"
+  },
+  {
+    "Sale #": 1312,
+    "Client": "Elena Lopez",
+    "Status": "Completed",
+    "Sale date": "28 May 2024, 2:44pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 395.00"
+  },
+  {
+    "Sale #": 1313,
+    "Client": "Genesis Galeas",
+    "Status": "Completed",
+    "Sale date": "30 May 2024, 3:45pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 745.00"
+  },
+  {
+    "Sale #": 1314,
+    "Client": "Fernanda Artica",
+    "Status": "Completed",
+    "Sale date": "30 May 2024, 4:38pm",
+    "Location": "NVN Beauty Studio",
+    "Tips": "HNL 0.00",
+    "Gross total": "HNL 1,000.00"
+  }
+]
