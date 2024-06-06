@@ -1,15 +1,66 @@
 import requests
 
 from settings import Config
+from utils.tax import hn_tax
+from utils.url import custom_urlencode
 
 zoho_api = 'https://www.zohoapis.com/books/v3'
 
 def get_contacts(access_token, contact_name_contains: str = None):
-    contact = requests.get(f'{zoho_api}/contacts', params={
-        'contact_name_contains': contact_name_contains,
+    name = 'Walk-Inn' if contact_name_contains == 'Sin cita' else contact_name_contains
+    contact = requests.get(f'{zoho_api}/contacts', params=custom_urlencode({
+        'contact_name_contains': name,
         'organization_id': Config.ZOHO_ORGANIZATION_ID
-    }, headers={
+    }), headers={
         'Authorization': f'Bearer {access_token}'
     })
 
     return contact.json()
+
+
+def get_items(access_token, items, discount_applied_on_tax = True):
+    items_return = []
+    total_adjustment = 0
+    for local_item in items:
+        params = {
+            'name_contains': local_item['Item'],
+            'organization_id': Config.ZOHO_ORGANIZATION_ID
+        }
+
+        response = requests.get(f'{zoho_api}/items', params=custom_urlencode(params), headers={
+            'Authorization': f'Bearer {access_token}'
+        })
+
+        items = response.json()
+
+        for zoho_item in items['items']:
+            local_rate = float(local_item['Gross sales'])
+            local_discount = float(local_item['Total discounts'])
+            item_discount = 0
+            if discount_applied_on_tax:
+                item_discount = hn_tax(local_discount)
+            else:
+                total_adjustment += local_discount
+            if abs(hn_tax(local_rate) - zoho_item['rate']) < 0.1:
+                items_return.append({
+                    **zoho_item,
+                    'discount': abs(item_discount),
+                })
+
+        if not items_return:
+            raise ValueError(f"Item {local_item['Item']} not found in Zoho")
+    return items_return, total_adjustment
+
+
+def create_invoice(access_token, invoice_data):
+    response = requests.post(f'{zoho_api}/invoices', headers={
+        'Authorization': f'Bearer {access_token}'
+    }, json={
+        'customer_id': invoice_data['customer_id'],
+        'date': invoice_data['date'],
+        'due_date': invoice_data['due_date'],
+        'invoice_number': invoice_data['invoice_number'],
+        'line_items': invoice_data['line_items']
+    })
+
+    return response.json()['invoice']
