@@ -828,13 +828,27 @@
                 "Category": "Maquillaje",
                 "Team member": "Nicolle Valladares",
                 "Channel": "Offline",
-                "Gross sales": "1500.0",
-                "Item discounts": "-200.0",
+                "Gross sales": "750",
+                "Item discounts": "-100.0",
                 "Cart discounts": 0.0,
-                "Total discounts": "-200.0",
-                "Net sales": "1300.0",
+                "Total discounts": "-100.0",
+                "Net sales": "650",
                 "Taxes on net sales": 0.0,
-                "Total sales": "1300.0"
+                "Total sales": "650"
+            },
+            {
+                "Type": "Service",
+                "Item": "Maquillaje profesional + Pestañas",
+                "Category": "Maquillaje",
+                "Team member": "Nicolle Valladares",
+                "Channel": "Offline",
+                "Gross sales": "750",
+                "Item discounts": "-100.0",
+                "Cart discounts": 0.0,
+                "Total discounts": "-100.0",
+                "Net sales": "650",
+                "Taxes on net sales": 0.0,
+                "Total sales": "650"
             }
         ],
         "Payments": [

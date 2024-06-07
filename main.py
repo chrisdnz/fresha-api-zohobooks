@@ -2,14 +2,28 @@ from typing import Union
 from fastapi import FastAPI, Response, Request
 from playwright.sync_api import sync_playwright
 import json
+from contextlib import asynccontextmanager
 
 from authentication.session import validate_session
 from scrapping.fresha import FreshaScrapper
 from api.zohobooks import get_contacts, get_items, create_invoice
-from utils.date import format_date, sort_by_date
+from utils.date import format_date, sort_by_date, to_datetime
 from utils.invoices import get_invoice_number
+from database.prisma.connection import connect_db, disconnect_db, prisma
+from settings import Config
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await connect_db()
+    try:
+        yield
+    finally:
+        await disconnect_db()
+
+
+app = FastAPI(lifespan=lifespan)
+
 
 @app.middleware("http")
 async def verify_authorization(request: Request, call_next):
@@ -66,8 +80,8 @@ def pay_invoices(request: Request):
 
 
 @app.get("/zoho/invoices")
-def create_invoices_from_dummy(request: Request):
-    dummy = json.load(open('./dummy/invoices_temp.json'))
+async def create_invoices_from_dummy(request: Request):
+    dummy = json.load(open('./dummy/grouped_data.json'))
     access_token = request.headers.get("Authorization")
     last_invoice_number = request.query_params.get("last_invoice_number")
 
@@ -87,6 +101,20 @@ def create_invoices_from_dummy(request: Request):
 
         print(f"Creating invoice for {invoice['Client']} with invoice number {invoice_number}")
 
+        await prisma.invoice.create(
+            data={
+                'invoice_number': invoice_number,
+                'zoho_customer_id': contact_id,
+                'zoho_line_items': [item['item_id'] for item in items if item['item_id'] is not None],
+                'fresha_sale_id': invoice['Sale no.'],
+                'fresha_account_id': Config.FRESHA_CLIENT_ID,
+                'createdAt': to_datetime(invoice['Date']),
+                'due_date': to_datetime(invoice['Date']),
+                'adjustment': total_adjustment,
+                'adjustment_description': 'Descuento' if total_adjustment > 0 else 'Ajuste'
+            }
+        )
+        
         new_invoice = create_invoice(
             access_token,
             {
@@ -99,12 +127,16 @@ def create_invoices_from_dummy(request: Request):
                 'line_items': [
                     {
                         'item_id': item['item_id'],
-                        'rate': item['rate'],
                         'quantity': 1,
                         'discount': item['discount']
                     } for item in items
                 ]
             }
+        )
+
+        await prisma.invoice.update(
+            where={'invoice_number': invoice_number},
+            data={'zoho_invoice_id': new_invoice['invoice_id']}
         )
 
         last_invoice_number = new_invoice['invoice_number']

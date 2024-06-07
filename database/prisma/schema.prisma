@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-py"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Invoice {
+  id                     String        @id @default(cuid())
+  zoho_customer_id       String
+  zoho_invoice_id        String?       @unique
+  invoice_number         String        @unique
+  zoho_line_items        String[]
+  fresha_sale_id         String        @unique
+  fresha_account_id      String
+  status                 InvoiceStatus @default(CREATED)
+  due_date               DateTime?
+  adjustment             Float?
+  adjustment_description String?
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+  payments               Payment[]
+}
+
+model Payment {
+  id               String   @id @default(cuid())
+  zoho_customer_id String
+  payment_mode     String
+  amount           Float
+  amount_applied   Float
+  date             DateTime
+  bank_charges     Float?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  invoice          Invoice  @relation(fields: [invoiceId], references: [id])
+  invoiceId        String
+}
+
+enum InvoiceStatus {
+  PAID
+  CREATED
+}
