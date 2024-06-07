@@ -54,6 +54,17 @@ def list_contacts(request: Request):
     return dummy
 
 
+@app.get("/zoho/invoices/pay")
+def pay_invoices(request: Request):
+    dummy = json.load(open('./dummy/payments_temp.json'))
+    access_token = request.headers.get("Authorization")
+
+    for payment in dummy:
+        print(f"Creating payment for {payment['Client']} with amount {payment['Amount']}")
+
+    return dummy
+
+
 @app.get("/zoho/invoices")
 def create_invoices_from_dummy(request: Request):
     dummy = json.load(open('./dummy/invoices_temp.json'))
@@ -104,7 +115,8 @@ def create_invoices_from_dummy(request: Request):
 
 @app.get("/fresha/sales")
 def list_sales():
+    # TODO: Implement Fresha sales list
     with sync_playwright() as p:
         fresha = FreshaScrapper(p)
         fresha.social_login()
-        return {"sales": "list"}
+        return {"sales": "Work in progress"}

@@ -1,10 +1,24 @@
 import json
 import re
+import os
+from collections import defaultdict
 
-def group_invoice_data(data):
+def group_invoice_data(invoice_data, payment_data):
     grouped_data = {}
+    payments_by_sale_no = defaultdict(list)
 
-    for entry in data:
+    # Organize payment data by Sale No.
+    for payment in payment_data:
+        sale_no = payment['Sale no.']
+        payment_details = {
+            'Payment date': payment['Payment date'],
+            'Payment no.': payment['Payment no.'],
+            'Payment method': payment['Payment method'],
+            'Payment amount': float(payment['Payment amount'])
+        }
+        payments_by_sale_no[sale_no].append(payment_details)
+
+    for entry in invoice_data:
         sale_no = entry['Sale no.']
         common_fields = {
             'Date': entry['Date'],
@@ -35,7 +49,8 @@ def group_invoice_data(data):
                             k: float(entry[k]) for k in entry.keys() 
                             if k.endswith('sales') or k.endswith('discounts') 
                         }
-                    }]
+                    }],
+                    "Payments": payments_by_sale_no.get(sale_no, [])
                 }
             else:
                 existing_package = grouped_data[package_key]["Items"][0]
@@ -52,7 +67,8 @@ def group_invoice_data(data):
                 grouped_data[sale_no] = {
                     **common_fields,
                     "Sale no.": sale_no,
-                    "Items": [item_data]
+                    "Items": [item_data],
+                    "Payments": payments_by_sale_no.get(sale_no, [])
                 }
             else:
                 # Check for consistency in common fields
@@ -63,10 +79,27 @@ def group_invoice_data(data):
     
     return list(grouped_data.values())
 
-# Load and group the data
-data = json.load(open("./dummy/invoices_temp.json"))
-result = group_invoice_data(data)
+# Determine the directory of the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Write back to file (optional)
-with open("./dummy/invoices_temp.json", "w") as f:
+# Define the paths to the invoice and payment data files
+invoice_file_path = os.path.join(script_dir, "../dummy", "invoices_temp.json")
+payment_file_path = os.path.join(script_dir, "../dummy", "payments_temp.json")
+
+# Load the data
+with open(invoice_file_path, "r") as invoice_file:
+    invoice_data = json.load(invoice_file)
+with open(payment_file_path, "r") as payment_file:
+    payment_data = json.load(payment_file)
+
+result = group_invoice_data(invoice_data, payment_data)
+
+# Define the path to the new output file
+output_file_path = os.path.join(script_dir, "../dummy", "grouped_invoices-copy.json")
+
+# Ensure the directory exists
+os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
+
+# Write the grouped data to the new output file
+with open(output_file_path, "w") as f:
     json.dump(result, f, indent=4)
