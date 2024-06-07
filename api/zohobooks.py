@@ -64,3 +64,34 @@ def create_invoice(access_token, invoice_data):
     })
 
     return response.json()['invoice']
+
+
+def get_bank_accounts(access_token):
+    params = {
+        'organization_id': Config.ZOHO_ORGANIZATION_ID
+    }
+    response = requests.get(f'{zoho_api}/bankaccounts', headers={
+        'Authorization': f'Bearer {access_token}'
+    }, params=custom_urlencode(params))
+
+    return response.json()['bankaccounts']
+
+
+def create_payment(access_token, payment_data):
+    params = {
+        'organization_id': Config.ZOHO_ORGANIZATION_ID
+    }
+    response = requests.post(f'{zoho_api}/customerpayments', headers={
+        'Authorization': f'Bearer {access_token}'
+    }, json={
+        'customer_id': payment_data['customer_id'],
+        'payment_mode': payment_data['payment_mode'],
+        'amount': payment_data['amount'],
+        'date': payment_data['date'],
+        'invoice_id': payment_data['invoice_id'],
+        'amount_applied': payment_data['amount_applied'],
+        'account_id': payment_data['account_id'],
+        'bank_charges': payment_data['bank_charges'],
+    }, params=custom_urlencode(params))
+
+    return response.json()['payment']

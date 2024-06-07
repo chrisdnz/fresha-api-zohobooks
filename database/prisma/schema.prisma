@@ -31,17 +31,27 @@ model Invoice {
 }
 
 model Payment {
-  id               String   @id @default(cuid())
-  zoho_customer_id String
-  payment_mode     String
-  amount           Float
-  amount_applied   Float
-  date             DateTime
-  bank_charges     Float?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  invoice          Invoice  @relation(fields: [invoiceId], references: [id])
-  invoiceId        String
+  id                String   @id @default(cuid())
+  zoho_payment_id   String   @unique
+  fresha_payment_id String
+  payment_mode      String
+  amount            Float
+  amount_applied    Float
+  date              DateTime
+  bank_charges      Float?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  invoice           Invoice  @relation(fields: [invoiceId], references: [id])
+  invoiceId         String
+}
+
+model BankAccount {
+  id                String   @id @default(cuid())
+  zoho_account_id   String   @unique
+  fresha_account_id String
+  bank_name         String
+  account_type      String
+  updatedAt         DateTime @updatedAt
 }
 
 enum InvoiceStatus {
