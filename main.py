@@ -72,7 +72,7 @@ def list_contacts(request: Request):
 @app.get("/zoho/invoices/pay")
 async def pay_invoices(request: Request):
     dummy = json.load(open('./dummy/grouped_data.json'))
-    created_invoices = await prisma.invoice.find_many(where={'status': 'CREATED'}, order={'createdAt': 'desc'})
+    created_invoices = await prisma.invoice.find_many(where={'status': 'CREATED'}, order={'createdAt': 'asc'})
     access_token = request.headers.get("Authorization")
 
     payments_created = []
@@ -81,7 +81,8 @@ async def pay_invoices(request: Request):
         dummy_payment = next((payment for payment in dummy if payment['Sale no.'] == invoice.fresha_sale_id), None)
         payment_amount = round(float(dummy_payment['Payments'][0]['Payment amount'] if dummy_payment else 0))
         payment_method = dummy_payment['Payments'][0]['Payment method'] if dummy_payment else ''
-        payment_date = format_date(dummy_payment['Payments'][0]['Payment date'], "%Y-%m-%d")
+        dummy_payment_date = dummy_payment['Payments'][0]['Payment date'] if dummy_payment else ''
+        payment_date = format_date(dummy_payment_date, "%Y-%m-%d")
         fresha_payment_id = next((payment['Payments'][0]['Payment no.'] for payment in dummy if payment['Sale no.'] == invoice.fresha_sale_id), None)
         invoice_id = invoice.zoho_invoice_id
         customer_id = invoice.zoho_customer_id
@@ -93,7 +94,7 @@ async def pay_invoices(request: Request):
                 where={
                     'fresha_account_id': Config.FRESHA_CLIENT_ID,
                     'bank_name': 'Bac Credomatic',
-                    'account_type': 'bank'
+                    'account_type': 'Bank Transfer'
                 }
             )
         elif payment_method == 'Bank Transfer - Bac Credomatic':
@@ -101,7 +102,7 @@ async def pay_invoices(request: Request):
                 where={
                     'fresha_account_id': Config.FRESHA_CLIENT_ID,
                     'bank_name': 'Bac Credomatic',
-                    'account_type': 'bank'
+                    'account_type': 'Bank Transfer'
                 }
             )
         elif payment_method == 'Bank Transfer - Banco Promerica':
@@ -109,7 +110,7 @@ async def pay_invoices(request: Request):
                 where={
                     'fresha_account_id': Config.FRESHA_CLIENT_ID,
                     'bank_name': 'Banco Promerica',
-                    'account_type': 'bank'
+                    'account_type': 'Bank Transfer'
                 }
             )
 
@@ -117,7 +118,7 @@ async def pay_invoices(request: Request):
             payment_account = await prisma.bankaccount.find_first(
                 where={
                     'fresha_account_id': Config.FRESHA_CLIENT_ID,
-                    'account_type': 'cash'
+                    'account_type': 'Cash'
                 }
             )
         if payment_method == 'Credit Card':
@@ -125,7 +126,7 @@ async def pay_invoices(request: Request):
                 where={
                     'fresha_account_id': Config.FRESHA_CLIENT_ID,
                     'bank_name': 'Banco Promerica',
-                    'account_type': 'bank'
+                    'account_type': 'Bank Transfer'
                 }
             )
         
@@ -142,6 +143,7 @@ async def pay_invoices(request: Request):
 
         print(f"""
             Payment details:
+              - Payment Account ID: {account_id}
               - Payment amount: {payment_amount}
               - Payment method: {payment_method}
               - Payment date: {payment_date}
@@ -160,6 +162,12 @@ async def pay_invoices(request: Request):
                 'payment_mode': payment_mode,
                 'amount': payment_amount,
                 'date': payment_date,
+                'invoices': [
+                    {
+                        'invoice_id': invoice_id,
+                        'amount_applied': payment_amount,
+                    }
+                ],
                 'invoice_id': invoice_id,
                 'amount_applied': payment_amount,
                 'bank_charges': bank_charges,
@@ -174,9 +182,9 @@ async def pay_invoices(request: Request):
                 'amount': payment_amount,
                 'amount_applied': payment_amount,
                 'payment_mode': payment_method,
-                'date': to_datetime(payment_date),
+                'date': to_datetime(dummy_payment_date),
                 'bank_charges': bank_charges,
-                'invoiceId': invoice.zoho_invoice_id
+                'invoiceId': invoice.id
             }
         )
 

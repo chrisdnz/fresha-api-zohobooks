@@ -83,15 +83,11 @@ def create_payment(access_token, payment_data):
     }
     response = requests.post(f'{zoho_api}/customerpayments', headers={
         'Authorization': f'Bearer {access_token}'
-    }, json={
-        'customer_id': payment_data['customer_id'],
-        'payment_mode': payment_data['payment_mode'],
-        'amount': payment_data['amount'],
-        'date': payment_data['date'],
-        'invoice_id': payment_data['invoice_id'],
-        'amount_applied': payment_data['amount_applied'],
-        'account_id': payment_data['account_id'],
-        'bank_charges': payment_data['bank_charges'],
-    }, params=custom_urlencode(params))
+    }, json=payment_data, params=custom_urlencode(params))
 
-    return response.json()['payment']
+    payment = response.json()
+
+    if payment['code'] == 0:
+        return response.json()['payment']
+        
+    raise ValueError(payment['message'])
