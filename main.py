@@ -297,4 +297,5 @@ def list_sales():
     with sync_playwright() as p:
         fresha = FreshaScrapper(p)
         fresha.authenticate()
+        fresha.get_payment_transactions()
         return {"sales": "Work in progress"}

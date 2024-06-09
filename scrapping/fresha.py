@@ -4,9 +4,10 @@ import json
 
 from playwright.sync_api import Playwright
 from settings import Config
+from .html.transactions_operators import extract_payment_transactions
 
 class FreshaScrapper:
-    site_url = 'https://partners.fresha.com/users/sign-in'
+    site_url = 'https://partners.fresha.com'
     user_email = Config.FRESHA_ACCOUNT_EMAIL
     user_password = Config.FRESHA_ACCOUNT_PASSWORD
     session_path = None
@@ -17,7 +18,7 @@ class FreshaScrapper:
         self.browser = playwright.chromium.launch(headless=False)
         self.restore_session()
         self.page = self.context.new_page()
-        self.page.goto(self.site_url)
+        self.page.goto(f"{self.site_url}/users/sign-in")
         self.page.wait_for_load_state("networkidle")
 
         logging.info('Initialization - end')
@@ -32,14 +33,25 @@ class FreshaScrapper:
             self.page.get_by_placeholder("Enter a password").fill(self.user_password)
             self.page.get_by_label("Log in").click()
 
-            # self.page.wait_for_load_state("networkidle")
+            self.page.wait_for_url(f"{self.site_url}/calendar")
             logging.info('Logged in successfully')
             self.save_session()
         else:
             logging.info('Already logged in')
-
-        self.page.wait_for_timeout(30000)
         logging.info('Log in with Email - end')
+
+
+    def get_payment_transactions(self):
+        logging.info('Get payment transactions - start')
+        self.page.goto(f"{self.site_url}/reports/table/payment-transactions")
+        self.page.wait_for_load_state("networkidle")
+        self.page.wait_for_selector("text=Transactions")
+
+        page_content = self.page.content()
+
+        transactions = extract_payment_transactions(page_content)
+        print(transactions)
+        logging.info('Get payment transactions - end')
 
     def save_session(self):
         logging.info('Save session - start')
