@@ -18,5 +18,5 @@ class Config:
     FRESHA_CLIENT_ID = os.getenv('FRESHA_CLIENT_ID')
 
     # Credentials
-    GOOGLE_EMAIL = os.getenv('GOOGLE_EMAIL')
-    GOOGLE_PASSWORD = os.getenv('GOOGLE_PASSWORD')
+    FRESHA_ACCOUNT_EMAIL = os.getenv('FRESHA_ACCOUNT_EMAIL')
+    FRESHA_ACCOUNT_PASSWORD = os.getenv('FRESHA_ACCOUNT_PASSWORD')

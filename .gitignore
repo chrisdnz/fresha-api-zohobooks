@@ -13,3 +13,7 @@ dist/
 build/
 
 .env*
+
+# Playwright
+playwright-report/
+scrapping/.auth

@@ -1,7 +1,9 @@
+import json
+import logging
+
 from typing import Union
 from fastapi import FastAPI, Response, Request
 from playwright.sync_api import sync_playwright
-import json
 from contextlib import asynccontextmanager
 
 from authentication.session import validate_session
@@ -13,6 +15,7 @@ from utils.banks import process_bank_charges
 from database.prisma.connection import connect_db, disconnect_db, prisma
 from settings import Config
 
+logging.basicConfig(level=logging.INFO)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -293,5 +296,5 @@ def list_sales():
     # TODO: Implement Fresha sales list
     with sync_playwright() as p:
         fresha = FreshaScrapper(p)
-        fresha.social_login()
+        fresha.authenticate()
         return {"sales": "Work in progress"}
