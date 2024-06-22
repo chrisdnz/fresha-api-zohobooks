@@ -1,4 +1,4 @@
-import { UserAuthForm } from "@/components/auth-from";
+import { UserAuthForm } from "@/components/auth-form";
 
 export const metadata = {
   title: "Login",
