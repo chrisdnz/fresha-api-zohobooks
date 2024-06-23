@@ -21,7 +21,9 @@ export default async function Layout({ children }: Props) {
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <div className="flex flex-col sm:gap-4">
         {session?.user && <SiteHeader user={session?.user} />}
-        {children}
+        <main className="flex min-h-[calc(100vh-80px)] flex-1 flex-col gap-4 p-4 md:gap-8 md:p-10">
+          {children}
+        </main>
       </div>
     </div>
   );

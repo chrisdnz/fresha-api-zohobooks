@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import { ReceiptText } from 'lucide-react';
 import Link from 'next/link';
@@ -16,14 +16,16 @@ import { User as UserType } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Settings', href: '/settings' },
 ];
 
-export const SiteHeader = ({ user }: { user: UserType}) => {
-    const path = usePathname();
+export const SiteHeader = ({ user }: { user: UserType }) => {
+  const path = usePathname();
+  const { setTheme, theme } = useTheme();
   return (
     <header className="sticky top-0 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 md:px-6">
       <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
@@ -39,8 +41,8 @@ export const SiteHeader = ({ user }: { user: UserType}) => {
             key={item.label}
             href={item.href}
             className={cn(
-                "text-muted-foreground transition-colors hover:text-foreground",
-                path === item.href && 'text-foreground'
+              'text-muted-foreground transition-colors hover:text-foreground',
+              path === item.href && 'text-foreground'
             )}
           >
             {item.label}
@@ -61,7 +63,16 @@ export const SiteHeader = ({ user }: { user: UserType}) => {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()}>Logout</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                setTheme(theme === 'dark' ? 'light' : 'dark');
+              }}
+            >
+              Toggle Theme
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => signOut()}>
+              Logout
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
