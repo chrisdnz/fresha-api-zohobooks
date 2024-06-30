@@ -1,8 +1,7 @@
 from bs4 import BeautifulSoup
-import json
+import re
 
 def extract_payment_transactions(html):
-    # Parse the HTML
     soup = BeautifulSoup(html, 'html.parser')
 
     # Get table headers
@@ -13,10 +12,19 @@ def extract_payment_transactions(html):
     data = []
     for row in data_rows:
         cells = [cell.text.strip() for cell in row.find_all('td')]
-        # Extract amount, remove "HNL" and spaces/newlines
-        cells[-1] = cells[-1].replace("HNL", "").replace("\xa0", "").strip()  
-        data.append(dict(zip(headers, cells)))
+        
+        row_dict = {}
+        for header, cell in zip(headers, cells):
+            if header == "Payment no." or header == "Sale no.":
+                # Convert to integer
+                row_dict[header] = int(re.sub(r'\D', '', cell))
+            elif header == "Payment amount":
+                # Convert to float
+                row_dict[header] = float(re.sub(r'[^\d.]', '', cell))
+            else:
+                # Keep as string
+                row_dict[header] = cell
 
-    # Convert to JSON
-    json_data = json.dumps(data, indent=4)  
-    return json_data
+        data.append(row_dict)
+
+    return data
