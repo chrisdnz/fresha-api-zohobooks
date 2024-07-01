@@ -9,7 +9,6 @@ from utils.invoices import get_invoice_number
 from utils.banks import process_bank_charges
 from settings import Config
 from database.prisma.connection import prisma
-from dao.fresha import get_payments
 
 zoho_router = APIRouter()
 
@@ -140,14 +139,6 @@ async def pay_invoices(request: Request):
         payments_created.append(new_payment)
     return payments_created
 
-
-@zoho_router.get("/zoho/transactions")
-async def create_invoices_from_dummy(request: Request):
-    try:
-        transactions = await get_payments()
-        return JSONResponse(content=transactions)
-    except Exception as e:
-        return Response(status_code=500, content=str(e))
 
 @zoho_router.get("/zoho/invoices")
 async def create_invoices_from_dummy(request: Request):

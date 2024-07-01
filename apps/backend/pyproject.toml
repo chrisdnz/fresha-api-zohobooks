@@ -27,6 +27,9 @@ readme = 'README.md'
   playwright = "^1.44.0"
   beautifulsoup4 = "^4.12.3"
   prisma = "^0.13.1"
+  redis = "^5.0.7"
+  rq = "^1.16.2"
+  apscheduler = "^3.10.4"
 
   [tool.poetry.group.dev.dependencies]
   autopep8 = "2.0.2"

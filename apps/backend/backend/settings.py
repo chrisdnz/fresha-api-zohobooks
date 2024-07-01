@@ -20,3 +20,6 @@ class Config:
     # Credentials
     FRESHA_ACCOUNT_EMAIL = os.getenv('FRESHA_ACCOUNT_EMAIL')
     FRESHA_ACCOUNT_PASSWORD = os.getenv('FRESHA_ACCOUNT_PASSWORD')
+
+    # Redis Config
+    REDIS_URL = os.getenv('REDIS_URL')

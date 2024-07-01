@@ -6,11 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from playwright.sync_api import sync_playwright
 from contextlib import asynccontextmanager
 
-from scrapping.fresha import FreshaScrapper
+from .scrapping.fresha import FreshaScrapper
 
-from database.prisma.connection import connect_db, disconnect_db
-from routes.sales import sales_router
-from routes.zoho import zoho_router
+from .database.prisma.connection import connect_db, disconnect_db
+from .routes.transactions import sales_router
+from .routes.zoho import zoho_router
 
 API_PREFIX = "/api/v1"
 

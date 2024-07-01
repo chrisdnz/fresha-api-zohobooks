@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from dao.invoices import get_all_invoices
+from backend.dao.invoices import get_all_invoices
 
 sales_router = APIRouter()
 
