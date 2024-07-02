@@ -3,7 +3,7 @@ import os
 import json
 
 from playwright.async_api import async_playwright
-from settings import Config
+from backend.settings import Config
 from .html.transactions_operators import extract_payment_transactions
 
 class FreshaScrapper:

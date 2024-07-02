@@ -1,4 +1,5 @@
 # TODO: This is just an idea of what a task should look like
+import asyncio
 
 from typing import List
 
@@ -24,19 +25,22 @@ def parse_transactions_to_invoices(transactions: List[dict]) -> List[Invoice]:
         invoices.append(invoice)
     return invoices
 
-async def scrape_transactions():
-    job = get_current_job()
+def scrape_transactions():
+    async def async_task():
+        job = get_current_job()
+        
+        scraper = FreshaScrapper()
+        await scraper.initialize()
+        await scraper.authenticate()
+        transactions = await scraper.get_payment_transactions()
+        print(transactions)
+        await scraper.close()
+        
+        invoices = parse_transactions_to_invoices(transactions)
+        print(invoices)
+    # add_invoices(invoices)
     
-    scraper = FreshaScrapper()
-    await scraper.initialize()
-    await scraper.authenticate()
-    transactions = await scraper.get_payment_transactions()
-    await scraper.close()
+    # job.meta['num_invoices'] = len(transactions)
+    # job.save_meta()
     
-    invoices = parse_transactions_to_invoices(transactions)
-    add_invoices(invoices)
-    
-    job.meta['num_invoices'] = len(transactions)
-    job.save_meta()
-    
-    return f"Scraped {len(transactions)} invoices"
+    return asyncio.run(async_task())

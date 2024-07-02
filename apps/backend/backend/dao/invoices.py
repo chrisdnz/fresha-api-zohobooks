@@ -3,9 +3,7 @@ from typing import List
 from backend.database.prisma.connection import prisma
 
 async def get_all_invoices(payment_ids=None):
-    return await prisma.invoice.find_many(
-        where={'payment_id': {'in': payment_ids}} if payment_ids else None
-    )
+    return await prisma.invoice.find_many()
 
 
 async def add_invoices(invoices: list[Invoice]):

@@ -1,8 +1,8 @@
 import requests
 
-from settings import Config
-from utils.tax import hn_tax
-from utils.url import custom_urlencode
+from backend.settings import Config
+from backend.utils.tax import hn_tax
+from backend.utils.url import custom_urlencode
 
 zoho_api = 'https://www.zohoapis.com/books/v3'
 

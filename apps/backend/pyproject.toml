@@ -30,6 +30,7 @@ readme = 'README.md'
   redis = "^5.0.7"
   rq = "^1.16.2"
   apscheduler = "^3.10.4"
+  aioredis = "^2.0.1"
 
   [tool.poetry.group.dev.dependencies]
   autopep8 = "2.0.2"

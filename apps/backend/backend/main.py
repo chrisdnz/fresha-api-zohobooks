@@ -3,26 +3,30 @@ import logging
 from typing import Union
 from fastapi import FastAPI, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
-from playwright.sync_api import sync_playwright
 from contextlib import asynccontextmanager
+from rq import Queue
 
-from .scrapping.fresha import FreshaScrapper
-
-from .database.prisma.connection import connect_db, disconnect_db
-from .routes.transactions import sales_router
-from .routes.zoho import zoho_router
+from backend.database.prisma.connection import connect_db, disconnect_db
+from backend.routes.transactions import sales_router
+from backend.routes.zoho import zoho_router
+from backend.tasks.redis import redis_connection, redis_disconnect, redis
 
 API_PREFIX = "/api/v1"
+queue = None
 
 logging.basicConfig(level=logging.INFO)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_db()
+    await redis_connection()
+    global queue
+    queue = Queue(connection=redis)
     try:
         yield
     finally:
         await disconnect_db()
+        await redis_disconnect()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -63,13 +67,3 @@ async def error_handler(request: Request, exc: Union[Exception, str]):
 @app.get("/")
 def main():
     return "Server is running!"
-
-
-@app.get("/fresha/sales")
-def list_sales():
-    # TODO: Implement Fresha sales list
-    with sync_playwright() as p:
-        fresha = FreshaScrapper(p)
-        fresha.authenticate()
-        fresha.get_payment_transactions()
-        return {"sales": "Work in progress"}
