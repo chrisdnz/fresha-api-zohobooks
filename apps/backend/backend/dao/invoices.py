@@ -6,6 +6,9 @@ async def get_all_invoices(payment_ids=None):
     return await prisma.invoice.find_many()
 
 
+async def create_invoice(invoice: Invoice):
+    return await prisma.invoice.create(data=invoice)
+
 async def add_invoices(invoices: list[Invoice]):
     added_invoices = []
     updated_invoices = []

@@ -4,12 +4,11 @@ from typing import Union
 from fastapi import FastAPI, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from rq import Queue
 
 from backend.database.prisma.connection import connect_db, disconnect_db
 from backend.routes.transactions import sales_router
 from backend.routes.zoho import zoho_router
-from backend.tasks.redis import redis_connection, redis_disconnect, redis
+from backend.tasks.redis import redis_connection, redis_disconnect, init_queue
 
 API_PREFIX = "/api/v1"
 queue = None
@@ -19,14 +18,13 @@ logging.basicConfig(level=logging.INFO)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_db()
-    await redis_connection()
-    global queue
-    queue = Queue(connection=redis)
+    app.state.redis = await redis_connection()
+    app.state.queue = init_queue()
     try:
         yield
     finally:
         await disconnect_db()
-        await redis_disconnect()
+        await redis_disconnect(app.state.redis)
 
 
 app = FastAPI(lifespan=lifespan)

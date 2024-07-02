@@ -4,7 +4,7 @@ import json
 
 from playwright.async_api import async_playwright
 from backend.settings import Config
-from .html.transactions_operators import extract_payment_transactions
+from .html.transactions_operators import extract_data_reports_table
 
 class FreshaScrapper:
     site_url = 'https://partners.fresha.com'
@@ -49,13 +49,23 @@ class FreshaScrapper:
         logging.info('Get payment transactions - start')
         await self.page.goto(f"{self.site_url}/reports/table/payment-transactions")
         await self.page.wait_for_load_state("networkidle")
-        await self.page.wait_for_selector("text=Transactions")
 
         page_content = await self.page.content()
 
-        transactions = extract_payment_transactions(page_content)
+        transactions = extract_data_reports_table(page_content)
         logging.info('Get payment transactions - end')
         return transactions
+    
+    async def get_sales_log_details(self):
+        logging.info('Get sales log details - start')
+        await self.page.goto(f"{self.site_url}/reports/table/sales-log-detail")
+        await self.page.wait_for_load_state("networkidle")
+
+        page_content = await self.page.content()
+
+        sale_log_details = extract_data_reports_table(page_content)
+        logging.info('Get sales log details - end')
+        return sale_log_details
 
     async def save_session(self):
         logging.info('Save session - start')

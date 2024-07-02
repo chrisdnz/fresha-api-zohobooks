@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import re
 
-def extract_payment_transactions(html):
+def extract_data_reports_table(html):
     soup = BeautifulSoup(html, 'html.parser')
 
     # Get table headers
@@ -15,10 +15,12 @@ def extract_payment_transactions(html):
         
         row_dict = {}
         for header, cell in zip(headers, cells):
+            if cell == "":
+                continue
             if header == "Payment no." or header == "Sale no.":
                 # Convert to integer
                 row_dict[header] = int(re.sub(r'\D', '', cell))
-            elif header == "Payment amount":
+            elif header == "Payment amount" or header == "Gross sales" or header == "Net sales" or header == "Total sales" or header == "Item discounts" or header == "Cart discounts" or header == "Total discounts" or header == "Refunds" or header == "Taxes on net sales":
                 # Convert to float
                 row_dict[header] = float(re.sub(r'[^\d.]', '', cell))
             else:

@@ -4,17 +4,14 @@ from redis import Redis
 from rq import Queue
 from backend.settings import Config
 
-redis = Redis.from_url(Config.REDIS_URL)
-
-async_redis = None
 
 async def redis_connection() -> Redis:
-    global async_redis
-    async_redis = await aioredis.Redis.from_url(Config.REDIS_URL)
+    return await aioredis.Redis.from_url(Config.REDIS_URL)
+
 
 async def redis_disconnect(redis: Redis):
-    if async_redis:
-        await aioredis.Redis.close()
+    await aioredis.Redis.close(redis)
 
 
-queue = Queue(connection=redis)
+def init_queue():
+    return Queue(connection=Redis.from_url(Config.REDIS_URL))

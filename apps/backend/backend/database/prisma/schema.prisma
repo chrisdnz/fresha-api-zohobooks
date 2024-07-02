@@ -13,48 +13,60 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum InvoiceStatus {
+  PAID
+  UNPAID
+}
+
+model Customer {
+  id             Int       @id @default(autoincrement())
+  name           String
+  email          String?   @unique
+  phoneNumber    String?
+  zohoCustomerId String? // ID from Zoho Books after creation
+  invoices       Invoice[] @relation("CustomerInvoices")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Invoice {
-  id                     String        @id @default(cuid())
-  zoho_customer_id       String
-  zoho_invoice_id        String?       @unique
-  invoice_number         String        @unique
-  zoho_line_items        String[]
-  fresha_sale_id         String        @unique
-  fresha_account_id      String
-  status                 InvoiceStatus @default(CREATED)
-  due_date               DateTime?
-  adjustment             Float?
-  adjustment_description String?
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime      @updatedAt
-  payments               Payment[]
+  id            Int           @id @default(autoincrement())
+  clientName    String
+  invoiceDate   DateTime
+  status        InvoiceStatus @default(UNPAID)
+  items         Item[]        @relation("InvoiceItems")
+  zohoInvoiceId String? // ID from Zoho Books after creation
+  customerId    Int
+  customer      Customer      @relation("CustomerInvoices", fields: [customerId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Payment   Payment[]
+}
+
+model Item {
+  id          Int     @id @default(autoincrement())
+  serviceName String
+  price       Float
+  invoiceId   Int
+  invoice     Invoice @relation("InvoiceItems", fields: [invoiceId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Payment {
-  id                String   @id @default(cuid())
-  zoho_payment_id   String   @unique
-  fresha_payment_id String
-  payment_mode      String
-  amount            Float
-  amount_applied    Float
-  date              DateTime
-  bank_charges      Float?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  invoice           Invoice  @relation(fields: [invoiceId], references: [id])
-  invoiceId         String
-}
+  id            Int      @id @default(autoincrement())
+  paymentNo     String
+  saleNo        String
+  paymentAmount Float
+  paymentMethod String
+  paymentDate   DateTime
+  zohoPaymentId String? // ID from Zoho Books after creation
+  invoiceId     Int
+  invoice       Invoice  @relation(fields: [invoiceId], references: [id])
 
-model BankAccount {
-  id                String   @id @default(cuid())
-  zoho_account_id   String   @unique
-  fresha_account_id String
-  bank_name         String
-  account_type      String
-  updatedAt         DateTime @updatedAt
-}
-
-enum InvoiceStatus {
-  PAID
-  CREATED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
