@@ -23,3 +23,4 @@ class Config:
 
     # Redis Config
     REDIS_URL = os.getenv('REDIS_URL')
+    DATABASE_URL = os.getenv('DATABASE_URL')

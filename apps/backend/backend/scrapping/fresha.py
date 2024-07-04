@@ -4,7 +4,7 @@ import json
 
 from playwright.async_api import async_playwright
 from backend.settings import Config
-from .html.transactions_operators import extract_data_reports_table
+from .html.transactions_operators import extract_data_reports_table, extract_invoice_details
 
 class FreshaScrapper:
     site_url = 'https://partners.fresha.com'
@@ -21,7 +21,7 @@ class FreshaScrapper:
     async def initialize(self):
         logging.info('Initialization - start')
         playwright = await async_playwright().start()
-        self.browser = await playwright.chromium.launch(headless=True)
+        self.browser = await playwright.chromium.launch(headless=False)
         await self.restore_session()
         self.page = await self.context.new_page()
         await self.page.goto(f"{self.site_url}/users/sign-in")
@@ -58,14 +58,39 @@ class FreshaScrapper:
     
     async def get_sales_log_details(self):
         logging.info('Get sales log details - start')
-        await self.page.goto(f"{self.site_url}/reports/table/sales-log-detail")
+        await self.page.goto(f"{self.site_url}/reports/table/sales-list")
         await self.page.wait_for_load_state("networkidle")
 
         page_content = await self.page.content()
 
         sale_log_details = extract_data_reports_table(page_content)
+
+        # print(sale_log_details)
+        sale_details = []
+        for sale in sale_log_details:
+            sale_no = sale.get('Sale no.', '')
+            if not sale_no:
+                continue
+            matching_links = self.page.locator(f"//a[contains(text(), '{sale_no}')]")
+
+            count = await matching_links.count()
+            if count == 0:
+                print(f"No links found for Sale no. {sale_no}")
+                continue
+
+            for i in range(count):
+                link = matching_links.nth(i)
+                text_content = await link.text_content()
+                if f"{sale_no}" in text_content:
+                    await link.click()
+                    await self.page.wait_for_selector("[data-qa='invoice-details']", state="visible")
+                    invoice_page_details = await self.page.content()
+                    invoice_details = extract_invoice_details(invoice_page_details)
+                    invoice_details.update(sale)
+                    sale_details.append(invoice_details)
+        
         logging.info('Get sales log details - end')
-        return sale_log_details
+        return sale_details
 
     async def save_session(self):
         logging.info('Save session - start')

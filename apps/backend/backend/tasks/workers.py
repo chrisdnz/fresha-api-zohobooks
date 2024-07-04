@@ -2,12 +2,15 @@
 import asyncio
 
 from typing import List
+# from prisma import Prisma
 
 from rq import get_current_job
 from backend.dao.customers import create_customer
 from backend.scrapping.fresha import FreshaScrapper
 from backend.dao.invoices import create_invoice
 from backend.utils.date import to_datetime
+from backend.database.prisma.connection import connect_db, disconnect_db
+from backend.settings import Config
 
 from prisma.models import Invoice, Payment, Customer, Item
 
@@ -31,55 +34,70 @@ def scrape_transactions():
 
 def scrape_sales():
     async def async_task():
-        job = get_current_job()
-        
-        scraper = FreshaScrapper()
-        await scraper.initialize()
-        await scraper.authenticate()
-        sales_log_details = await scraper.get_sales_log_details()
-        await scraper.close()
-        
-        sales = []
-        for sale in sales_log_details:
-            # Use .get() method with default values
-            customer_name = sale.get('Client', '')
-            sale_no = sale.get('Sale no.', '')
-            date = sale.get('Date')
-            item_name = sale.get('Item', '')
+        try:
+            print("DB URL", Config.DATABASE_URL)
+            # job = get_current_job()
+            await connect_db()
+            print("Connected to database")
+            scraper = FreshaScrapper()
+            await scraper.initialize()
+            await scraper.authenticate()
+            sales_log_details = await scraper.get_sales_log_details()
+            await scraper.close()
+            
+            sales = []
 
-            if not customer_name and not sale_no and not date and not item_name:
-                continue
+            print("Scraping sales...")
+            # for sale in sales_log_details:
 
-            customer = await create_customer(customer_name) if customer_name else None
+            #     # Use .get() method with default values
+            #     print(sale)
+            #     customer_name = sale.get('Client', '')
+            #     sale_no = sale.get('Sale no.', '')
+            #     date = sale.get('Sale date')
+            #     item_name = sale.get('Item', '')
 
-            invoice = None
-            if sale_no:
-                invoice = Invoice(
-                    id=sale_no,
-                    clientName=customer_name,
-                    invoiceDate=to_datetime(date),
-                    customer=customer
-                )
-                await create_invoice(invoice)
+            #     print("validate data: ", customer_name, sale_no, date, item_name)
 
-            # item = None
-            # if item_name and invoice:
-            #     item = Item(
-            #         serviceName=item_name,
-            #         invoiceId=invoice.id
-            #     )
+            #     if not customer_name and not sale_no and not date and not item_name:
+            #         continue
 
-            # Only append non-None values
-            sale_data = {}
-            if customer:
-                sale_data['customer'] = customer
-            if invoice:
-                sale_data['invoice'] = invoice
-            # if item:
-            #     sale_data['item'] = item
+                # print("Creating customer")
+                # customer = await create_customer(customer_name) if customer_name else None
 
-            if sale_data:  # Only append if there's at least one non-None value
-                sales.append(sale_data)
-        
-        print(sales)
+                # invoice = None
+                # if sale_no:
+                #     invoice = Invoice(
+                #         id=sale_no,
+                #         clientName=customer_name,
+                #         invoiceDate=to_datetime(date),
+                #         customer=customer
+                #     )
+                #     await create_invoice(invoice)
+
+                # item = None
+                # if item_name and invoice:
+                #     item = Item(
+                #         serviceName=item_name,
+                #         invoiceId=invoice.id
+                #     )
+
+            #     # Only append non-None values
+            #     sale_data = {}
+            #     if customer:
+            #         sale_data['customer'] = customer
+            #     if invoice:
+            #         sale_data['invoice'] = invoice
+            #     # if item:
+            #     #     sale_data['item'] = item
+
+            #     if sale_data:  # Only append if there's at least one non-None value
+            #         sales.append(sale_data)
+            
+            # print(sales)
+        except Exception as e:
+            print(e)
+            return f"Error scraping sales: {str(e)}"
+        finally:
+            await disconnect_db()
     return asyncio.run(async_task())

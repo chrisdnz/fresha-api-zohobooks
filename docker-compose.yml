@@ -5,3 +5,13 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
+  
+  db:
+    image: postgres:alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      

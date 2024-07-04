@@ -7,8 +7,8 @@ def format_date(date, format):
     # Format the datetime object into the desired format
     return date_object.strftime(format)
 
-def to_datetime(date: str):
-    return datetime.strptime(date, "%Y-%m-%d %I:%M %p")
+def to_datetime(date: str, format: str = "%Y-%m-%d %I:%M %p"):
+    return datetime.strptime(date, format)
 
 def sort_by_date(data):
     for entry in data:
