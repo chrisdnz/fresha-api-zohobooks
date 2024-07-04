@@ -1,7 +1,9 @@
 import logging
 import os
 import json
+from prisma.models import Invoice
 
+from typing import List
 from playwright.async_api import async_playwright
 from backend.settings import Config
 from .html.transactions_operators import extract_data_reports_table, extract_invoice_details
@@ -21,7 +23,7 @@ class FreshaScrapper:
     async def initialize(self):
         logging.info('Initialization - start')
         playwright = await async_playwright().start()
-        self.browser = await playwright.chromium.launch(headless=False)
+        self.browser = await playwright.chromium.launch(headless=True)
         await self.restore_session()
         self.page = await self.context.new_page()
         await self.page.goto(f"{self.site_url}/users/sign-in")
@@ -56,7 +58,7 @@ class FreshaScrapper:
         logging.info('Get payment transactions - end')
         return transactions
     
-    async def get_sales_log_details(self):
+    async def get_sales_log_details(self) -> List[object]:
         logging.info('Get sales log details - start')
         await self.page.goto(f"{self.site_url}/reports/table/sales-list")
         await self.page.wait_for_load_state("networkidle")
@@ -90,7 +92,24 @@ class FreshaScrapper:
                     sale_details.append(invoice_details)
         
         logging.info('Get sales log details - end')
-        return sale_details
+        transformed_sales = []
+        for sale in sale_details:
+            items = {
+                'create': [{
+                    'serviceName': item['title'],
+                    'price': item['price']
+                } for item in sale['items']]
+            }
+            transformed_sales.append({
+                'clientName': sale['Client'],
+                'invoiceDate': sale['Sale date'],
+                'id': sale['Sale no.'],
+                'items': items,
+                'customer': {
+                    "name": sale['Client']
+                }
+            })
+        return transformed_sales
 
     async def save_session(self):
         logging.info('Save session - start')

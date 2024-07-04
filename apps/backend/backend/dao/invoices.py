@@ -10,33 +10,35 @@ async def create_invoice(invoice: Invoice):
     return await prisma.invoice.create(data=invoice)
 
 async def add_invoices(invoices: list[Invoice]):
-    added_invoices = []
-    updated_invoices = []
-
     try:
         for invoice in invoices:
-            # Assuming 'transaction_id' is the unique identifier for invoices
-            result = await prisma.invoice.upsert(
+            customer = await prisma.customer.upsert(
                 where={
-                    'payment_ref': invoice['payment_ref']
+                    'name': invoice['customer']['name']
                 },
                 data={
-                    'create': invoice,
-                    'update': invoice
+                    'create': invoice['customer'],
+                    'update': invoice['customer']
                 }
             )
-            
-            if result.created:
-                added_invoices.append(invoice['transaction_id'])
-            else:
-                updated_invoices.append(invoice['transaction_id'])
-
+            await prisma.invoice.upsert(
+                where={
+                    'id': invoice['id']
+                },
+                data={
+                    'create': {
+                        'clientName': invoice['clientName'],
+                        'invoiceDate': invoice['invoiceDate'],
+                        'id': invoice['id'],
+                        'items': invoice['items'],
+                        'customerId': customer.id
+                    },
+                    'update': {
+                        'id': invoice['id']
+                    }
+                }
+            )
         await prisma.disconnect()
-
-        return {
-            'added': added_invoices,
-            'updated': updated_invoices
-        }
     except Exception as e:
         print(f"Error adding/updating invoices: {str(e)}")
         await prisma.disconnect()

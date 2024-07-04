@@ -329,6 +329,16 @@ tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.1
 toml = ["tomli"]
 
 [[package]]
+name = "crontab"
+version = "1.0.1"
+description = "Parse and use crontab schedules in Python"
+optional = false
+python-versions = "*"
+files = [
+    {file = "crontab-1.0.1.tar.gz", hash = "sha256:89477e3f93c81365e738d5ee2659509e6373bb2846de13922663e79aa74c6b91"},
+]
+
+[[package]]
 name = "dnspython"
 version = "2.6.1"
 description = "DNS toolkit"
@@ -436,6 +446,20 @@ files = [
 mccabe = ">=0.7.0,<0.8.0"
 pycodestyle = ">=2.10.0,<2.11.0"
 pyflakes = ">=3.0.0,<3.1.0"
+
+[[package]]
+name = "freezegun"
+version = "1.5.1"
+description = "Let your Python tests travel through time"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "freezegun-1.5.1-py3-none-any.whl", hash = "sha256:bf111d7138a8abe55ab48a71755673dbaa4ab87f4cff5634a4442dfec34c15f1"},
+    {file = "freezegun-1.5.1.tar.gz", hash = "sha256:b29dedfcda6d5e8e083ce71b2b542753ad48cfec44037b3fc79702e2980a89e9"},
+]
+
+[package.dependencies]
+python-dateutil = ">=2.7"
 
 [[package]]
 name = "greenlet"
@@ -1479,6 +1503,23 @@ click = ">=5"
 redis = ">=3.5"
 
 [[package]]
+name = "rq-scheduler"
+version = "0.13.1"
+description = "Provides job scheduling capabilities to RQ (Redis Queue)"
+optional = false
+python-versions = "*"
+files = [
+    {file = "rq-scheduler-0.13.1.tar.gz", hash = "sha256:89d6a18f215536362b22c0548db7dbb8678bc520c18dc18a82fd0bb2b91695ce"},
+    {file = "rq_scheduler-0.13.1-py2.py3-none-any.whl", hash = "sha256:c2b19c3aedfc7de4d405183c98aa327506e423bf4cdc556af55aaab9bbe5d1a1"},
+]
+
+[package.dependencies]
+crontab = ">=0.23.0"
+freezegun = "*"
+python-dateutil = "*"
+rq = ">=0.13"
+
+[[package]]
 name = "shellingham"
 version = "1.5.4"
 description = "Tool to Detect Surrounding Shell"
@@ -1993,4 +2034,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "92eccf951ad44e75c62232edb74eee9f06137181751bc5dffc0d318e65087741"
+content-hash = "054fb41a2cd9add1ba12b602b332e8d29c5ff8a4dcbde743667ad3461cde63b4"

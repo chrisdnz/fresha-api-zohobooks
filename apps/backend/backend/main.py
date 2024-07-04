@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from backend.database.prisma.connection import connect_db, disconnect_db
 from backend.routes.transactions import sales_router
 from backend.routes.zoho import zoho_router
-from backend.tasks.redis import redis_connection, redis_disconnect, init_queue
+from backend.tasks.redis import redis_connection, redis_disconnect, init_queue, init_scheduler
 
 API_PREFIX = "/api/v1"
 queue = None
@@ -20,6 +20,7 @@ async def lifespan(app: FastAPI):
     await connect_db()
     app.state.redis = await redis_connection()
     app.state.queue = init_queue()
+    init_scheduler(app.state.queue, app.state.redis)
     try:
         yield
     finally:
