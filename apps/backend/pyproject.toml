@@ -33,6 +33,7 @@ readme = 'README.md'
   aioredis = "^2.0.1"
   pandas = "^2.2.2"
   rq-scheduler = "^0.13.1"
+  qstash-python = "^1.1.0"
 
   [tool.poetry.group.dev.dependencies]
   autopep8 = "2.0.2"
