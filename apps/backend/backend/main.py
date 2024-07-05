@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
     # TODO: Clout deployments are extra costs, so we will not use Redis for now
     # app.state.redis = await redis_connection()
     # app.state.queue = init_queue()
-    init_scheduler()
+    # init_scheduler()
     try:
         yield
     finally:
