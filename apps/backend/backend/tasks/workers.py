@@ -32,22 +32,25 @@ def scrape_transactions():
     
     return asyncio.run(async_task())
 
+
+async def async_task_sales_logs():
+    try:
+        print("DB URL", Config.DATABASE_URL)
+        # job = get_current_job()
+        await connect_db()
+        print("Connected to database")
+        scraper = FreshaScrapper()
+        await scraper.initialize()
+        await scraper.authenticate()
+        sales_log_details = await scraper.get_sales_log_details()
+        await scraper.close()
+        await add_invoices(sales_log_details)
+    except Exception as e:
+        print(e)
+        return f"Error scraping sales: {str(e)}"
+    finally:
+        await disconnect_db()
+
+
 def scrape_sales():
-    async def async_task():
-        try:
-            print("DB URL", Config.DATABASE_URL)
-            # job = get_current_job()
-            await connect_db()
-            print("Connected to database")
-            scraper = FreshaScrapper()
-            await scraper.initialize()
-            await scraper.authenticate()
-            sales_log_details = await scraper.get_sales_log_details()
-            await scraper.close()
-            await add_invoices(sales_log_details)
-        except Exception as e:
-            print(e)
-            return f"Error scraping sales: {str(e)}"
-        finally:
-            await disconnect_db()
-    return asyncio.run(async_task())
+    return asyncio.run(async_task_sales_logs())

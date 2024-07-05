@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from redis import Redis
 from rq import Queue
 from rq_scheduler import Scheduler
+
 from backend.settings import Config
 
 
@@ -32,3 +33,5 @@ def init_scheduler(queue: Queue, redis: Redis):
         interval=86400, # 24 hours
         repeat=None
     )
+
+    scheduler.run()

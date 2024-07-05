@@ -24,3 +24,9 @@ class Config:
     # Redis Config
     REDIS_URL = os.getenv('REDIS_URL')
     DATABASE_URL = os.getenv('DATABASE_URL')
+
+    # QSTASH Config
+    QSTASH_TOKEN = os.getenv('QSTASH_TOKEN')
+    QSTASH_CURRENT_SIGNING_KEY = os.getenv('QSTASH_CURRENT_SIGNING_KEY')
+    QSTASH_NEXT_SIGNING_KEY = os.getenv('QSTASH_NEXT_SIGNING_KEY')
+    SCHEDULE_URL = os.getenv('SCHEDULE_URL')
