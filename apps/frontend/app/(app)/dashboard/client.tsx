@@ -19,11 +19,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useTransactions } from '@/lib/hooks/transactions';
+import { useInvoices } from '@/lib/hooks/invoices';
 import { HNLCurrency } from '@/lib/utils';
 
 export default function InvoicesTable() {
-  const { data } = useTransactions();
+  const { data } = useInvoices();
   return (
     <Card className="w-full">
       <CardContent className="p-0">
@@ -42,7 +42,7 @@ export default function InvoicesTable() {
           </TableHeader>
           <TableBody>
             {/* TODO: Correct type here */}
-            {data?.map((transaction: any) => (
+            {/* {data?.map((transaction: any) => (
               <TableRow key={transaction["Payment no."]}>
                 <TableCell>{transaction["Payment no."]}</TableCell>
                 <TableCell>{transaction["Client"]}</TableCell>
@@ -64,7 +64,7 @@ export default function InvoicesTable() {
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))}
+            ))} */}
           </TableBody>
         </Table>
       </CardContent>
