@@ -8,7 +8,8 @@ from contextlib import asynccontextmanager
 from backend.database.prisma.connection import connect_db, disconnect_db
 from backend.routes.scheduled_jobs import sales_router
 from backend.routes.zoho import zoho_router
-from backend.tasks.qstash import init_scheduler
+from backend.routes.invoices import invoices_router
+# from backend.tasks.qstash import init_scheduler
 
 API_PREFIX = "/api/v1"
 queue = None
@@ -41,6 +42,7 @@ app.add_middleware(
 
 app.include_router(sales_router, prefix=API_PREFIX)
 app.include_router(zoho_router, prefix=API_PREFIX)
+app.include_router(invoices_router, prefix=API_PREFIX)
 
 @app.middleware("http")
 async def verify_authorization(request: Request, call_next):

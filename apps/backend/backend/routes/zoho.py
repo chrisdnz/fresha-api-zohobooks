@@ -6,6 +6,7 @@ from backend.api.zohobooks import get_contacts, get_items, create_invoice, get_b
 from backend.utils.date import format_date, sort_by_date, to_datetime
 from backend.utils.invoices import get_invoice_number
 from backend.utils.banks import process_bank_charges
+from backend.dao.invoices import get_all_invoices
 from backend.settings import Config
 from backend.database.prisma.connection import prisma
 
@@ -141,6 +142,7 @@ async def pay_invoices(request: Request):
 
 @zoho_router.get("/zoho/invoices")
 async def create_invoices_from_dummy(request: Request):
+    db_invoices = await get_all_invoices()
     dummy = json.load(open('./dummy/grouped_data.json'))
     access_token = request.headers.get("Authorization")
     last_invoice_number = request.query_params.get("last_invoice_number")

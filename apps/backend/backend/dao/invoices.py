@@ -2,12 +2,15 @@ from prisma.models import Invoice
 from typing import List
 from backend.database.prisma.connection import prisma
 
-async def get_all_invoices(payment_ids=None):
-    return await prisma.invoice.find_many()
 
+async def get_all_invoices():
+    return await prisma.invoice.find_many(
+        include={
+            'customer': True,
+            'items': True
+        }
+    )
 
-async def create_invoice(invoice: Invoice):
-    return await prisma.invoice.create(data=invoice)
 
 async def add_invoices(invoices: list[Invoice]):
     try:

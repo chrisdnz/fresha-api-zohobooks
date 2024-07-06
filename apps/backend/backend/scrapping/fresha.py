@@ -23,7 +23,7 @@ class FreshaScrapper:
     async def initialize(self):
         logging.info('Initialization - start')
         playwright = await async_playwright().start()
-        self.browser = await playwright.chromium.launch(headless=True)
+        self.browser = await playwright.chromium.launch(headless=False)
         await self.restore_session()
         self.page = await self.context.new_page()
         await self.page.goto(f"{self.site_url}/users/sign-in")
@@ -58,16 +58,15 @@ class FreshaScrapper:
         logging.info('Get payment transactions - end')
         return transactions
     
-    async def get_sales_log_details(self) -> List[object]:
+    async def get_sales_log_details(self, time_filter: str) -> List[object]:
         logging.info('Get sales log details - start')
-        await self.page.goto(f"{self.site_url}/reports/table/sales-list")
+        await self.page.goto(f"{self.site_url}/reports/table/sales-list{'?shortcut=' + time_filter if time_filter else ''}")
         await self.page.wait_for_load_state("networkidle")
 
         page_content = await self.page.content()
 
         sale_log_details = extract_data_reports_table(page_content)
 
-        # print(sale_log_details)
         sale_details = []
         for sale in sale_log_details:
             sale_no = sale.get('Sale no.', '')
