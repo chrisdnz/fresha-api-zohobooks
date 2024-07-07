@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from backend.database.prisma.connection import connect_db, disconnect_db
+from backend.authentication.session import validate_session
 from backend.routes.scheduled_jobs import sales_router
 from backend.routes.zoho import zoho_router
 from backend.routes.invoices import invoices_router
@@ -54,8 +55,12 @@ async def verify_authorization(request: Request, call_next):
         return response
     
     access_token = request.headers.get("Authorization")
+    
     if not access_token:
         return Response(status_code=401, content="Authorization header is required")
+
+    if not validate_session(access_token):
+        return Response(status_code=401, content="Unauthorized access")
     
     response = await call_next(request)
     return response

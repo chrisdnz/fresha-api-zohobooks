@@ -2,7 +2,15 @@ import json
 
 from fastapi import APIRouter, Response, Request
 
-from backend.api.zohobooks import get_contacts, get_items, create_invoice, get_bank_accounts, create_payment
+from backend.api.zohobooks import (
+    get_contacts,
+    get_items,
+    create_invoice,
+    create_contact,
+    get_bank_accounts,
+    create_payment,
+    get_inovoices as get_zoho_invoices
+)
 from backend.utils.date import format_date, sort_by_date, to_datetime
 from backend.utils.invoices import get_invoice_number
 from backend.utils.banks import process_bank_charges
@@ -142,67 +150,73 @@ async def pay_invoices(request: Request):
 
 @zoho_router.get("/zoho/invoices")
 async def create_invoices_from_dummy(request: Request):
-    db_invoices = await get_all_invoices()
+    invoices = await get_all_invoices()
     dummy = json.load(open('./dummy/grouped_data.json'))
     access_token = request.headers.get("Authorization")
-    last_invoice_number = request.query_params.get("last_invoice_number")
+    zoho_invoices = get_zoho_invoices(access_token)['invoices']
+    if zoho_invoices:
+        last_invoice_number = zoho_invoices[0]['invoice_number']
+    else:
+        last_invoice_number = None
 
     invoices_created = []
     if not last_invoice_number:
         return Response(status_code=400, content="last_invoice_number is required")
-    
-    # dummy sort by date
-    dummy = sort_by_date(dummy)
 
-    for invoice in dummy:
-        contact_id = get_contacts(access_token, invoice['Client'])['contacts'][0]['contact_id']
-        date = format_date(invoice['Date'], "%Y-%m-%d")
-        due_date = format_date(invoice['Date'], "%Y-%m-%d")
+    for invoice in invoices:
+        contact = get_contacts(access_token, invoice.customer.name)
+        contact_id = contact['contacts'][0]['contact_id'] if len(contact['contacts']) > 0 else None
+        if not contact_id:
+            print(f"Contact {invoice.customer.name} not found in Zoho")
+            contact = create_contact(access_token, {
+                'contact_name': invoice.customer.name,
+            })['contact']
+            contact_id = contact['contact_id']
         invoice_number = get_invoice_number(last_invoice_number)
-        items, total_adjustment = get_items(access_token, invoice['Items'])
+        items, total_adjustment = get_items(access_token, invoice.items)
 
-        print(f"Creating invoice for {invoice['Client']} with invoice number {invoice_number}")
+        print(f"Creating invoice for {invoice.customer.name} with invoice number {invoice_number}")
 
-        await prisma.invoice.create(
-            data={
-                'invoice_number': invoice_number,
-                'zoho_customer_id': contact_id,
-                'zoho_line_items': [item['item_id'] for item in items if item['item_id'] is not None],
-                'fresha_sale_id': invoice['Sale no.'],
-                'fresha_account_id': Config.FRESHA_CLIENT_ID,
-                'createdAt': to_datetime(invoice['Date']),
-                'due_date': to_datetime(invoice['Date']),
-                'adjustment': total_adjustment,
-                'adjustment_description': 'Descuento' if total_adjustment > 0 else 'Ajuste'
-            }
-        )
+        # await prisma.invoice.create(
+        #     data={
+        #         'invoice_number': invoice_number,
+        #         'zoho_customer_id': contact_id,
+        #         'zoho_line_items': [item['item_id'] for item in items if item['item_id'] is not None],
+        #         'fresha_sale_id': invoice['Sale no.'],
+        #         'fresha_account_id': Config.FRESHA_CLIENT_ID,
+        #         'createdAt': invoice.invoiceDate,
+        #         'due_date': invoice.invoiceDate,
+        #         'adjustment': total_adjustment,
+        #         'adjustment_description': 'Descuento' if total_adjustment > 0 else 'Ajuste'
+        #     }
+        # )
         
-        new_invoice = create_invoice(
-            access_token,
-            {
-                'customer_id': contact_id,
-                'date': date,
-                'due_date': due_date,
-                'invoice_number': invoice_number,
-                'adjustment': total_adjustment,
-                'adjustment_description': 'Descuento' if total_adjustment > 0 else 'Ajuste',
-                'line_items': [
-                    {
-                        'item_id': item['item_id'],
-                        'quantity': 1,
-                        'discount': item['discount']
-                    } for item in items
-                ]
-            }
-        )
+        # new_invoice = create_invoice(
+        #     access_token,
+        #     {
+        #         'customer_id': contact_id,
+        #         'date': invoice.invoiceDate,
+        #         'due_date': invoice.invoiceDate,
+        #         'invoice_number': invoice_number,
+        #         'adjustment': total_adjustment,
+        #         'adjustment_description': 'Descuento' if total_adjustment > 0 else 'Ajuste',
+        #         'line_items': [
+        #             {
+        #                 'item_id': item['item_id'],
+        #                 'quantity': 1,
+        #                 'discount': item['discount']
+        #             } for item in items
+        #         ]
+        #     }
+        # )
 
-        await prisma.invoice.update(
-            where={'invoice_number': invoice_number},
-            data={'zoho_invoice_id': new_invoice['invoice_id']}
-        )
+        # await prisma.invoice.update(
+        #     where={'invoice_number': invoice_number},
+        #     data={'zoho_invoice_id': new_invoice['invoice_id']}
+        # )
 
-        last_invoice_number = new_invoice['invoice_number']
-        invoices_created.append(new_invoice)
+        # last_invoice_number = new_invoice['invoice_number']
+        # invoices_created.append(new_invoice)
 
     return invoices_created
 

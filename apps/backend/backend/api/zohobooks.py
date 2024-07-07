@@ -1,4 +1,8 @@
 import requests
+import difflib
+
+from typing import List
+from prisma.models import Item
 
 from backend.settings import Config
 from backend.utils.tax import hn_tax
@@ -18,12 +22,30 @@ def get_contacts(access_token, contact_name_contains: str = None):
     return contact.json()
 
 
-def get_items(access_token, items, discount_applied_on_tax = True):
+def create_contact(access_token, contact_data):
+    response = requests.post(f'{zoho_api}/contacts', headers={
+        'Authorization': f'Bearer {access_token}'
+    }, json=contact_data)
+
+    return response.json()
+
+def get_inovoices(access_token):
+    invoices = requests.get(f'{zoho_api}/invoices', params=custom_urlencode({
+        'organization_id': Config.ZOHO_ORGANIZATION_ID
+    }), headers={
+        'Authorization': f'Bearer {access_token}'
+    })
+
+    return invoices.json()
+
+
+def get_items(access_token, items: List[Item], discount_applied_on_tax = True):
     items_return = []
     total_adjustment = 0
     for local_item in items:
+        query = local_item.serviceName
         params = {
-            'name_contains': local_item['Item'],
+            'name_contains': query,
             'organization_id': Config.ZOHO_ORGANIZATION_ID
         }
 
@@ -31,11 +53,31 @@ def get_items(access_token, items, discount_applied_on_tax = True):
             'Authorization': f'Bearer {access_token}'
         })
 
-        items = response.json()
+        zoho_items = response.json()['items']
 
-        for zoho_item in items['items']:
-            local_rate = float(local_item['Gross sales'])
-            local_discount = float(local_item['Total discounts'])
+        if not zoho_items:
+            amount = local_item.price + local_item.manual_discount + local_item.package_discount
+            print(f"Item {query} with rate {hn_tax(amount)} not found in Zoho")
+            response = requests.post(f'{zoho_api}/items', headers={
+                'Authorization': f'Bearer {access_token}'
+            }, json={
+                'name': query,
+                'rate': hn_tax(amount),
+                'tax_id': '3093985000000075001',
+                'product_type': 'service',
+                'item_type': 'sales',
+            })
+            
+            item = response.json()['item']
+
+            zoho_items = [item]
+
+        closest_match = difflib.get_close_matches(query, [item['item_name'] for item in zoho_items], n=1, cutoff=0.6)
+
+        if closest_match:
+            zoho_item = next(item for item in zoho_items if item['item_name'] == closest_match[0])
+            local_discount = local_item.manual_discount + local_item.package_discount
+            local_rate = local_item.price + local_discount
             item_discount = 0
             if discount_applied_on_tax:
                 item_discount = hn_tax(local_discount)
@@ -48,7 +90,8 @@ def get_items(access_token, items, discount_applied_on_tax = True):
                 })
 
         if not items_return:
-            raise ValueError(f"Item {local_item['Item']} not found in Zoho")
+            print(f"Item {query} not found in Zoho, Price rate not match")
+            continue
     return items_return, total_adjustment
 
 

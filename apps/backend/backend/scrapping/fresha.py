@@ -6,6 +6,7 @@ from prisma.models import Invoice
 from typing import List
 from playwright.async_api import async_playwright
 from backend.settings import Config
+from backend.utils.constants import INVOICE_STATUS
 from .html.transactions_operators import extract_data_reports_table, extract_invoice_details
 
 class FreshaScrapper:
@@ -23,7 +24,7 @@ class FreshaScrapper:
     async def initialize(self):
         logging.info('Initialization - start')
         playwright = await async_playwright().start()
-        self.browser = await playwright.chromium.launch(headless=False)
+        self.browser = await playwright.chromium.launch(headless=True)
         await self.restore_session()
         self.page = await self.context.new_page()
         await self.page.goto(f"{self.site_url}/users/sign-in")
@@ -66,9 +67,10 @@ class FreshaScrapper:
         page_content = await self.page.content()
 
         sale_log_details = extract_data_reports_table(page_content)
+        filtered_sales = list(filter(lambda sale: sale.get('Sale status', '') == INVOICE_STATUS.get('COMPLETED'), sale_log_details))
 
         sale_details = []
-        for sale in sale_log_details:
+        for sale in filtered_sales:
             sale_no = sale.get('Sale no.', '')
             if not sale_no:
                 continue
@@ -96,7 +98,9 @@ class FreshaScrapper:
             items = {
                 'create': [{
                     'serviceName': item['title'],
-                    'price': item['price']
+                    'price': item['price'],
+                    'manual_discount': item['manual_discount'],
+                    'package_discount': item['package_discount'],
                 } for item in sale['items']]
             }
             transformed_sales.append({

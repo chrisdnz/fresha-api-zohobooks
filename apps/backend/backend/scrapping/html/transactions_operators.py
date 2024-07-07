@@ -106,10 +106,14 @@ def extract_invoice_details(html_content):
 
     # Extract item details with price conversion
     for item_container in soup.find_all('div', attrs={'data-qa': lambda value: value and value.startswith('pos-cart-item-container-')}):
+        manual_discount_text = item_container.find(string=lambda text: text and re.search(r'manual discount', text, re.IGNORECASE))
+        package_discount_text = item_container.find(string=lambda text: text and re.search(r'package discount', text, re.IGNORECASE))
         item = {
             'title': clean_text(item_container.find('p', attrs={'data-qa': 'pos-cart-item-title'}).text),
             'description': clean_text(item_container.find('span', attrs={'data-qa': 'pos-cart-item-description'}).text),
             'price': extract_amount(item_container.find('span', attrs={'data-qa': 'pos-cart-item-price'}).text),
+            'manual_discount': float(re.sub(r'[^\d.]', '', manual_discount_text)) if manual_discount_text else 0.0,
+            'package_discount': float(re.sub(r'[^\d.]', '', package_discount_text)) if package_discount_text else 0.0,
         }
         invoice_details['items'].append(item)
 
