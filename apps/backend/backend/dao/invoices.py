@@ -3,12 +3,21 @@ from typing import List
 from backend.database.prisma.connection import prisma
 
 
-async def get_all_invoices():
+async def get_all_invoices(query: dict):
     return await prisma.invoice.find_many(
         include={
             'customer': True,
             'items': True
-        }
+        },
+        where=query.get('where', {}),
+        order=query.get('order', {'id': 'asc'})
+    )
+
+
+async def update_invoice(invoice: dict):
+    return await prisma.invoice.update(
+        where={'id': invoice['id']},
+        data=invoice
     )
 
 
@@ -30,7 +39,6 @@ async def add_invoices(invoices: list[Invoice]):
                 },
                 data={
                     'create': {
-                        'clientName': invoice['clientName'],
                         'invoiceDate': invoice['invoiceDate'],
                         'id': invoice['id'],
                         'items': invoice['items'],
@@ -46,3 +54,11 @@ async def add_invoices(invoices: list[Invoice]):
         print(f"Error adding/updating invoices: {str(e)}")
         await prisma.disconnect()
         raise
+
+
+async def create_zoho_invoice(zoho_invoice):
+    data = await prisma.zohoinvoice.create(
+        data=zoho_invoice
+    )
+
+    return data

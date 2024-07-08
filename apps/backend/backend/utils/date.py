@@ -1,6 +1,10 @@
 from datetime import datetime
 
 
+def fromisoformat(date: str):
+    return datetime.fromisoformat(date)
+
+
 def format_date(date, format):
     # Parse the date string into a datetime object
     date_object = datetime.strptime(date, "%Y-%m-%d %I:%M %p")

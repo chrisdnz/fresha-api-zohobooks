@@ -30,11 +30,11 @@ export default function InvoicesTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Payment No.</TableHead>
+              <TableHead>Invoice No.</TableHead>
               <TableHead>Client</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead>Total Sale</TableHead>
-              <TableHead>Created at</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Total</TableHead>
+              <TableHead>Zoho</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
@@ -42,13 +42,18 @@ export default function InvoicesTable() {
           </TableHeader>
           <TableBody>
             {/* TODO: Correct type here */}
-            {/* {data?.map((transaction: any) => (
-              <TableRow key={transaction["Payment no."]}>
-                <TableCell>{transaction["Payment no."]}</TableCell>
-                <TableCell>{transaction["Client"]}</TableCell>
-                <TableCell>{transaction["Payment method"]}</TableCell>
-                <TableCell>{HNLCurrency(transaction["Payment amount"])}</TableCell>
-                <TableCell>{transaction["Sale date"]}</TableCell>
+            {data?.map((transaction: any) => (
+              <TableRow key={transaction.id}>
+                <TableCell>{transaction.id}</TableCell>
+                <TableCell>{transaction?.customer?.name}</TableCell>
+                <TableCell>{transaction?.status}</TableCell>
+                <TableCell>{HNLCurrency(
+                  transaction?.items?.reduce(
+                    (acc: number, item: any) => acc + (item?.price),
+                    0
+                  )
+                )}</TableCell>
+                <TableCell>{transaction?.zohoInvoiceId}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -64,7 +69,7 @@ export default function InvoicesTable() {
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))} */}
+            ))}
           </TableBody>
         </Table>
       </CardContent>

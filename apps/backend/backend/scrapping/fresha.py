@@ -104,7 +104,6 @@ class FreshaScrapper:
                 } for item in sale['items']]
             }
             transformed_sales.append({
-                'clientName': sale['Client'],
                 'invoiceDate': sale['Sale date'],
                 'id': sale['Sale no.'],
                 'items': items,

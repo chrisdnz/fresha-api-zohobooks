@@ -16,6 +16,7 @@ datasource db {
 enum InvoiceStatus {
   PAID
   UNPAID
+  CREATED
 }
 
 model Customer {
@@ -32,9 +33,8 @@ model Customer {
 
 model Invoice {
   id            Int           @id @default(autoincrement())
-  clientName    String
   invoiceDate   DateTime
-  status        InvoiceStatus @default(UNPAID)
+  status        InvoiceStatus @default(CREATED)
   items         Item[]        @relation("InvoiceItems")
   zohoInvoiceId String? // ID from Zoho Books after creation
   customerId    Int
@@ -68,6 +68,23 @@ model Payment {
   zohoPaymentId String? // ID from Zoho Books after creation
   invoiceId     Int
   invoice       Invoice  @relation(fields: [invoiceId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ZohoInvoice {
+  id             String   @id
+  invoice_number String
+  invoice_url    String
+  date           DateTime
+  status         String
+  customer_name  String
+  total          Float
+  tax_total      Float
+  sub_total      Float
+  discount       Float
+  balance        Float
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

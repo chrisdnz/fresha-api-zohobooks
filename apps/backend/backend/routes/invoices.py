@@ -6,4 +6,4 @@ invoices_router = APIRouter()
 
 @invoices_router.get("/invoices")
 async def get_invoices(request: Request):
-    return await get_all_invoices()
+    return await get_all_invoices({'order': {'id': 'desc'}})

@@ -46,7 +46,7 @@ def get_items(access_token, items: List[Item], discount_applied_on_tax = True):
         query = local_item.serviceName
         params = {
             'name_contains': query,
-            'organization_id': Config.ZOHO_ORGANIZATION_ID
+            'organization_id': Config.ZOHO_ORGANIZATION_ID,
         }
 
         response = requests.get(f'{zoho_api}/items', params=custom_urlencode(params), headers={
@@ -54,8 +54,9 @@ def get_items(access_token, items: List[Item], discount_applied_on_tax = True):
         })
 
         zoho_items = response.json()['items']
+        filtered_active_items = [item for item in zoho_items if item['status'] == 'active']
 
-        if not zoho_items:
+        if not filtered_active_items:
             amount = local_item.price + local_item.manual_discount + local_item.package_discount
             print(f"Item {query} with rate {hn_tax(amount)} not found in Zoho")
             response = requests.post(f'{zoho_api}/items', headers={
@@ -70,12 +71,12 @@ def get_items(access_token, items: List[Item], discount_applied_on_tax = True):
             
             item = response.json()['item']
 
-            zoho_items = [item]
+            filtered_active_items = [item]
 
-        closest_match = difflib.get_close_matches(query, [item['item_name'] for item in zoho_items], n=1, cutoff=0.6)
+        closest_match = difflib.get_close_matches(query, [item['name'] for item in filtered_active_items], n=1, cutoff=0.6)
 
         if closest_match:
-            zoho_item = next(item for item in zoho_items if item['item_name'] == closest_match[0])
+            zoho_item = next(item for item in filtered_active_items if item['name'] == closest_match[0])
             local_discount = local_item.manual_discount + local_item.package_discount
             local_rate = local_item.price + local_discount
             item_discount = 0
@@ -106,7 +107,9 @@ def create_invoice(access_token, invoice_data):
         'line_items': invoice_data['line_items']
     })
 
-    return response.json()['invoice']
+    data = response.json()
+
+    return data['invoice']
 
 
 def get_bank_accounts(access_token):
