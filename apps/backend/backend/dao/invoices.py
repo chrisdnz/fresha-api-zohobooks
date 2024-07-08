@@ -7,7 +7,8 @@ async def get_all_invoices(query: dict):
     return await prisma.invoice.find_many(
         include={
             'customer': True,
-            'items': True
+            'items': True,
+            'zohoInvoice': True
         },
         where=query.get('where', {}),
         order=query.get('order', {'id': 'asc'})

@@ -53,7 +53,7 @@ export default function InvoicesTable() {
                     0
                   )
                 )}</TableCell>
-                <TableCell>{transaction?.zohoInvoiceId}</TableCell>
+                <TableCell>{transaction?.zohoInvoice?.invoice_number}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

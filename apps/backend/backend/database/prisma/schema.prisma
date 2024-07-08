@@ -37,6 +37,7 @@ model Invoice {
   status        InvoiceStatus @default(CREATED)
   items         Item[]        @relation("InvoiceItems")
   zohoInvoiceId String? // ID from Zoho Books after creation
+  zohoInvoice   ZohoInvoice?  @relation(fields: [zohoInvoiceId], references: [id])
   customerId    Int
   customer      Customer      @relation("CustomerInvoices", fields: [customerId], references: [id])
 
@@ -86,6 +87,7 @@ model ZohoInvoice {
   discount       Float
   balance        Float
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Invoice   Invoice[]
 }
