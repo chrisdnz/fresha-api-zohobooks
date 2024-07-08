@@ -21,3 +21,11 @@ def sort_by_date(data):
     for entry in sorted_data:
         entry["Date"] = entry["Date"].strftime("%Y-%m-%d %I:%M %p")
     return sorted_data
+
+
+def is_date_valid(date: str, format: str = "%d %b %Y, %I:%M%p"):
+    try:
+        datetime.strptime(date, format)
+        return True
+    except ValueError:
+        return False

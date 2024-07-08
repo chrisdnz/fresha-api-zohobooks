@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import re
 
-from backend.utils.date import to_datetime
+from backend.utils.date import to_datetime, is_date_valid
 
 FLOAT_FIELDS = [
     "Total sales",
@@ -53,7 +53,7 @@ def extract_data_reports_table(html):
             
             if header in DATE_TIME_FIELDS:
                 row_dict[header] = to_datetime(cell_text, "%d %b %Y, %I:%M%p")
-            elif header in ["Sale no.", "Items sold"]:
+            elif header in ["Sale no.", "Items sold", "Payment no."]:
                 row_dict[header] = int(cell_text) if cell_text.isdigit() else None
             elif header in FLOAT_FIELDS:
                 row_dict[header] = float(re.sub(r'[^\d.]', '', cell_text)) if re.sub(r'[^\d.]', '', cell_text) else None
@@ -64,8 +64,15 @@ def extract_data_reports_table(html):
         sales_text = sales_cell.text.strip() if sales_cell else ''
         if sales_text:
             # Assuming the sales data is numeric. Adjust as needed.
-            cleaned_sales_text = re.sub(r'[^\d.]', '', sales_text)
-            row_dict['Sale no.'] = int(cleaned_sales_text) if cleaned_sales_text else None
+            if isinstance(sales_text, (int, float)):
+                cleaned_sales_text = re.sub(r'[^\d.]', '', sales_text)
+                row_dict['Sale no.'] = int(cleaned_sales_text) if cleaned_sales_text else None
+            elif is_date_valid(sales_text, "%d %b %Y, %I:%M%p"):
+                cleaned_sales_text = to_datetime(sales_text, "%d %b %Y, %I:%M%p")
+                row_dict['Payment date'] = cleaned_sales_text
+            else:
+                row_dict['Payment date'] = None
+                row_dict['Sale no.'] = None
         else:
             row_dict['Sale no.'] = None
 

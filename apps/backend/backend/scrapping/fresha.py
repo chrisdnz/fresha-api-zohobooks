@@ -48,9 +48,9 @@ class FreshaScrapper:
             logging.info('Already logged in')
         logging.info('Log in with Email - end')
 
-    async def get_payment_transactions(self):
+    async def get_payment_transactions(self, time_filter: str):
         logging.info('Get payment transactions - start')
-        await self.page.goto(f"{self.site_url}/reports/table/payment-transactions")
+        await self.page.goto(f"{self.site_url}/reports/table/payment-transactions{'?shortcut=' + time_filter if time_filter else ''}")
         await self.page.wait_for_load_state("networkidle")
 
         page_content = await self.page.content()

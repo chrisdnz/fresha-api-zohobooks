@@ -50,10 +50,8 @@ async def add_invoices(invoices: list[Invoice]):
                     }
                 }
             )
-        await prisma.disconnect()
     except Exception as e:
         print(f"Error adding/updating invoices: {str(e)}")
-        await prisma.disconnect()
         raise
 
 
