@@ -2,6 +2,10 @@ from prisma.models import Payment
 
 from backend.database.prisma.connection import prisma
 
+
+async def get_payments_by_invoice_ids(invoice_ids: list[int]):
+    return await prisma.payment.find_many(where={'invoiceId': {'in': invoice_ids}}, include={'invoice': True}, order={'payment_date': 'asc'})
+
 async def add_payments(payments: list[Payment]):
     try:
         for payment in payments:

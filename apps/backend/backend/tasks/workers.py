@@ -1,19 +1,9 @@
-# TODO: This is just an idea of what a task should look like
 import asyncio
 
-# from typing import List
-# from prisma import Prisma
-
-# from rq import get_current_job
-# from backend.dao.customers import create_customer
 from backend.scrapping.fresha import FreshaScrapper
 from backend.dao.invoices import add_invoices
 from backend.dao.payments import add_payments
-# from backend.utils.date import to_datetime
 from backend.database.prisma.connection import connect_db, disconnect_db
-# from backend.settings import Config
-
-from prisma.models import Invoice, Payment, Customer, Item
 
 async def scrape_transactions(params: dict):
     try:
@@ -49,6 +39,8 @@ async def async_task_sales_logs(params: dict):
         sales_log_details = await scraper.get_sales_log_details(time_filter)
         await scraper.close()
         await add_invoices(sales_log_details)
+
+        await scrape_transactions(params)
     except Exception as e:
         print(e)
         return f"Error scraping sales: {str(e)}"

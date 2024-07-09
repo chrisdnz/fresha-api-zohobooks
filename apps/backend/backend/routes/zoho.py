@@ -1,5 +1,3 @@
-import json
-
 from fastapi import APIRouter, Response, Request
 
 from backend.api.zohobooks import (
@@ -11,10 +9,12 @@ from backend.api.zohobooks import (
     create_payment,
     get_inovoices as get_zoho_invoices
 )
-from backend.utils.date import format_date, fromisoformat, to_datetime
+from backend.utils.date import fromisoformat
 from backend.utils.invoices import get_invoice_number
 from backend.utils.banks import process_bank_charges
-from backend.dao.invoices import get_all_invoices, update_invoice, create_zoho_invoice
+from backend.dao.invoices import get_all_invoices, update_invoice, create_zoho_invoice, get_unpaid_invoices, get_invoice_by_id
+from backend.dao.payments import get_payments_by_invoice_ids
+from backend.dao.customers import update_customer
 from backend.settings import Config
 from backend.database.prisma.connection import prisma
 
@@ -22,21 +22,21 @@ zoho_router = APIRouter()
 
 @zoho_router.get("/zoho/invoices/pay")
 async def pay_invoices(request: Request):
-    dummy = json.load(open('./dummy/grouped_data.json'))
-    created_invoices = await prisma.invoice.find_many(where={'status': 'CREATED'}, order={'createdAt': 'asc'})
+    unpaid_invoices = await get_unpaid_invoices()
+    payments = await get_payments_by_invoice_ids(
+        [invoice.id for invoice in unpaid_invoices]
+    )
     access_token = request.headers.get("Authorization")
-
     payments_created = []
 
-    for invoice in created_invoices:
-        dummy_payment = next((payment for payment in dummy if payment['Sale no.'] == invoice.fresha_sale_id), None)
-        payment_amount = round(float(dummy_payment['Payments'][0]['Payment amount'] if dummy_payment else 0))
-        payment_method = dummy_payment['Payments'][0]['Payment method'] if dummy_payment else ''
-        dummy_payment_date = dummy_payment['Payments'][0]['Payment date'] if dummy_payment else ''
-        payment_date = format_date(dummy_payment_date, "%Y-%m-%d")
-        fresha_payment_id = next((payment['Payments'][0]['Payment no.'] for payment in dummy if payment['Sale no.'] == invoice.fresha_sale_id), None)
-        invoice_id = invoice.zoho_invoice_id
-        customer_id = invoice.zoho_customer_id
+    for payment in payments:
+        payment_amount = round(payment.payment_amount, 2)
+        payment_method = payment.payment_method
+        payment_date = payment.payment_date.strftime("%Y-%m-%d")
+        invoice_id = payment.invoice.id
+        invoice = await get_invoice_by_id(invoice_id)
+        invoice_number = invoice.zohoInvoice.invoice_number
+        customer_id = invoice.customer.zohoCustomerId
         bank_charges = process_bank_charges(payment_amount) if payment_method == 'Credit Card' else 0
 
         # TODO: Implement payment methods to not be hardcoded
@@ -45,7 +45,7 @@ async def pay_invoices(request: Request):
                 where={
                     'fresha_account_id': Config.FRESHA_CLIENT_ID,
                     'bank_name': 'Bac Credomatic',
-                    'account_type': 'Bank Transfer'
+                    'account_type': 'bank'
                 }
             )
         elif payment_method == 'Bank Transfer - Bac Credomatic':
@@ -53,7 +53,7 @@ async def pay_invoices(request: Request):
                 where={
                     'fresha_account_id': Config.FRESHA_CLIENT_ID,
                     'bank_name': 'Bac Credomatic',
-                    'account_type': 'Bank Transfer'
+                    'account_type': 'bank'
                 }
             )
         elif payment_method == 'Bank Transfer - Banco Promerica':
@@ -61,7 +61,7 @@ async def pay_invoices(request: Request):
                 where={
                     'fresha_account_id': Config.FRESHA_CLIENT_ID,
                     'bank_name': 'Banco Promerica',
-                    'account_type': 'Bank Transfer'
+                    'account_type': 'bank'
                 }
             )
 
@@ -69,7 +69,7 @@ async def pay_invoices(request: Request):
             payment_account = await prisma.bankaccount.find_first(
                 where={
                     'fresha_account_id': Config.FRESHA_CLIENT_ID,
-                    'account_type': 'Cash'
+                    'account_type': 'cash'
                 }
             )
         if payment_method == 'Credit Card':
@@ -77,20 +77,17 @@ async def pay_invoices(request: Request):
                 where={
                     'fresha_account_id': Config.FRESHA_CLIENT_ID,
                     'bank_name': 'Banco Promerica',
-                    'account_type': 'Bank Transfer'
+                    'account_type': 'bank'
                 }
             )
-        
-        if not dummy_payment:
-            continue
 
         if not payment_account:
             print(f"Payment account not found for {payment_method}")
             continue
 
         payment_mode = payment_account.account_type
-        account_id = payment_account.zoho_account_id
-        print(f"Creating payment for Invoice #{invoice.invoice_number} with amount {dummy_payment['Payments'][0]['Payment amount']}")
+        account_id = payment_account.id
+        print(f"Creating payment for Invoice #{invoice_number} with amount {payment_amount}")
 
         print(f"""
             Payment details:
@@ -114,33 +111,20 @@ async def pay_invoices(request: Request):
                 'amount': payment_amount,
                 'date': payment_date,
                 'invoices': [
-                    {
-                        'invoice_id': invoice_id,
+                    {   
+                        'invoice_id': invoice.zohoInvoice.id,
                         'amount_applied': payment_amount,
                     }
                 ],
-                'invoice_id': invoice_id,
+                'invoice_id': invoice.zohoInvoice.id,
                 'amount_applied': payment_amount,
                 'bank_charges': bank_charges,
                 'account_id': account_id
             }
         )
 
-        await prisma.payment.create(
-            data={
-                'zoho_payment_id': new_payment['payment_id'],
-                'fresha_payment_id': fresha_payment_id,
-                'amount': payment_amount,
-                'amount_applied': payment_amount,
-                'payment_mode': payment_method,
-                'date': to_datetime(dummy_payment_date),
-                'bank_charges': bank_charges,
-                'invoiceId': invoice.id
-            }
-        )
-
         await prisma.invoice.update(
-            where={'invoice_number': invoice.invoice_number},
+            where={'id': payment.invoice.id},
             data={'status': 'PAID'}
         )
 
@@ -174,6 +158,8 @@ async def create_invoices_from_dummy(request: Request):
                 'contact_name': invoice.customer.name,
             })['contact']
             contact_id = contact['contact_id']
+
+        await update_customer(invoice.customer.id, {'zohoCustomerId': contact_id})
         invoice_number = get_invoice_number(last_invoice_number)
         items, total_adjustment = get_items(access_token, invoice.items)
 
@@ -235,13 +221,13 @@ async def sync_bank_accounts(request: Request):
     zoho_bankaccounts = get_bank_accounts(access_token)
     accounts = []
     for account in zoho_bankaccounts:
-        # trycatch for unique constraint
         try:
             account_synced = await prisma.bankaccount.create(
                 data={
-                    'zoho_account_id': account['account_id'],
+                    'id': account['account_id'],
                     'fresha_account_id': Config.FRESHA_CLIENT_ID,
                     'bank_name': account['bank_name'],
+                    'account_name': account['account_name'],
                     'account_type': account['account_type'],
                 }
             )

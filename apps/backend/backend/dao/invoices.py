@@ -3,6 +3,17 @@ from typing import List
 from backend.database.prisma.connection import prisma
 
 
+async def get_invoice_by_id(invoice_id: int):
+    return await prisma.invoice.find_unique(
+        where={'id': invoice_id},
+        include={
+            'customer': True,
+            'items': True,
+            'zohoInvoice': True
+        }
+    )
+
+
 async def get_all_invoices(query: dict):
     return await prisma.invoice.find_many(
         include={
@@ -19,6 +30,12 @@ async def update_invoice(invoice: dict):
     return await prisma.invoice.update(
         where={'id': invoice['id']},
         data=invoice
+    )
+
+
+async def get_unpaid_invoices():
+    return await prisma.invoice.find_many(
+        where={'status': 'UNPAID'}
     )
 
 
