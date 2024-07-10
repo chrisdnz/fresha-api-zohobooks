@@ -33,7 +33,7 @@
     "start": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "poetry run fastapi main.py --host 0.0.0.0 --port $PORT",
+        "command": "poetry run fastapi dev main.py --host 0.0.0.0 --port $PORT",
         "cwd": "apps/api/api"
       }
     },
