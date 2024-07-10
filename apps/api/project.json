@@ -33,8 +33,8 @@
     "start": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "poetry run uvicorn main:app --host 0.0.0.0 --port $PORT --reload",
-        "cwd": "apps/backend/backend"
+        "command": "poetry run fastapi main.py --host 0.0.0.0 --port $PORT",
+        "cwd": "apps/api/api"
       }
     },
     "install": {
