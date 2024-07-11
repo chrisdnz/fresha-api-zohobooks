@@ -18,6 +18,13 @@
         "cwd": "apps/api"
       }
     },
+    "prisma": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "poetry run prisma generate",
+        "cwd": "apps/api/api"
+      }
+    },
     "add": {
       "executor": "@nxlv/python:add",
       "options": {}

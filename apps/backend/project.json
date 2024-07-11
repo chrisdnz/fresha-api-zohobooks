@@ -25,6 +25,13 @@
         "cwd": "apps/backend/backend"
       }
     },
+    "prisma:push": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "poetry run prisma db push --schema database/prisma/schema.prisma",
+        "cwd": "apps/backend/backend"
+      }
+    },
     "add": {
       "executor": "@nxlv/python:add",
       "options": {}
