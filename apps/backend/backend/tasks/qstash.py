@@ -15,7 +15,7 @@ def init_scheduler():
 
     res = schedules.create({
         "destination": Config.SCHEDULE_URL,
-        "cron": "0 0 * * *" # Every day at midnight
+        "cron": "0 0 * * *" # Every day at midnight,
     })
 
     print(res)

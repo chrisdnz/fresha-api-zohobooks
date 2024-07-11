@@ -14,15 +14,22 @@
     "start": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "poetry run uvicorn main:app --host 0.0.0.0 --port $PORT --reload",
+        "command": "poetry run fastapi dev main.py --host 0.0.0.0 --port $PORT",
         "cwd": "apps/backend/backend"
       }
     },
     "prisma": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "poetry run prisma generate --schema backend/database/prisma/schema.prisma",
-        "cwd": "apps/backend"
+        "command": "poetry run prisma generate --schema database/prisma/schema.prisma",
+        "cwd": "apps/backend/backend"
+      }
+    },
+    "prisma:push": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "poetry run prisma db push --schema database/prisma/schema.prisma",
+        "cwd": "apps/backend/backend"
       }
     },
     "add": {

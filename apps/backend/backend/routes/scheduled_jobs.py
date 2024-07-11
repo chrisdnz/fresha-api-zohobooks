@@ -27,8 +27,7 @@ async def queue_sales(request: Request, time_filter: str = Query(None)) :
     # signature, body = request.headers.get("Upstash-Signature"), await request.body()
     # is_valid = receiver.verify({
     #     "signature": signature,
-    #     "body": body,
-    #     "url": f"{request.url.scheme}://{request.url.netloc}{request.url.path}"
+    #     "body": body
     # })
     time_filter = request.query_params.get("time_filter")
     await async_task_sales_logs({
