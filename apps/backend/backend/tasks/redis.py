@@ -30,7 +30,7 @@ def init_scheduler(queue: Queue, redis: Redis):
     scheduler.schedule(
         scheduled_time=datetime.utcnow() + timedelta(seconds=5),
         func=daily_task,
-        interval=86400, # 24 hours
+        interval=60,
         repeat=None
     )
 
