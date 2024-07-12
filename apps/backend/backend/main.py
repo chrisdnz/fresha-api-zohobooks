@@ -10,7 +10,7 @@ from backend.authentication.session import validate_session
 from backend.routes.scheduled_jobs import sales_router
 from backend.routes.zoho import zoho_router
 from backend.routes.invoices import invoices_router
-from backend.tasks.qstash import init_scheduler
+from backend.tasks.qstash import init_scheduler, remove_scheduler
 
 API_PREFIX = "/api/v1"
 queue = None
@@ -23,11 +23,12 @@ async def lifespan(app: FastAPI):
     # TODO: Clout deployments are extra costs, so we will not use Redis for now
     # app.state.redis = await redis_connection()
     # app.state.queue = init_queue()
-    init_scheduler()
+    app.state.schedule_id = init_scheduler()
     try:
         yield
     finally:
         await disconnect_db()
+        remove_scheduler(app.state.schedule_id)
         # await redis_disconnect(app.state.redis)
 
 

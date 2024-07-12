@@ -13,11 +13,23 @@ client = Client(Config.QSTASH_TOKEN)
 def init_scheduler():
     schedules = client.schedules()
 
+    schedules_list = schedules.list()
+
+    # clear all schedules
+    for schedule in schedules_list:
+        schedules.delete(schedule['scheduleId'])
+
     res = schedules.create({
         "destination": Config.SCHEDULE_URL,
         "cron": "0 0 * * *" # Every day at midnight,
     })
 
-    print(res)
-
     return res['scheduleId']
+
+
+def remove_scheduler(schedule_id):
+    if not schedule_id:
+        return
+    schedules = client.schedules()
+
+    schedules.delete(schedule_id)
