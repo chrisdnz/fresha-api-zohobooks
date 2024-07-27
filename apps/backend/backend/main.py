@@ -5,7 +5,7 @@ from fastapi import FastAPI, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-# from backend.database.prisma.connection import connect_db, disconnect_db
+from backend.database.prisma.connection import connect_db, disconnect_db
 from backend.authentication.session import validate_session
 from backend.routes.scheduled_jobs import sales_router
 from backend.routes.zoho import zoho_router
@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # await connect_db()
+    await connect_db()
     # TODO: Clout deployments are extra costs, so we will not use Redis for now
     # app.state.redis = await redis_connection()
     # app.state.queue = init_queue()
@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
-        # await disconnect_db()
+        await disconnect_db()
         remove_scheduler(app.state.schedule_id)
         # await redis_disconnect(app.state.redis)
 
