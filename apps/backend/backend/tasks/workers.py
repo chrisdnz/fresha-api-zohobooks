@@ -16,12 +16,13 @@ async def scrape_transactions(params: dict):
         await scraper.initialize()
         await scraper.authenticate()
         transactions = await scraper.get_payment_transactions(time_filter)
-        await scraper.close()
         await add_payments(transactions)
     except Exception as e:
         print(e)
         return f"Error scraping sales: {str(e)}"
     finally:
+        if scraper:
+            await scraper.close()
         if db_connection:
             await disconnect_db()
 
@@ -37,14 +38,15 @@ async def async_task_sales_logs(params: dict):
         await scraper.initialize()
         await scraper.authenticate()
         sales_log_details = await scraper.get_sales_log_details(time_filter)
-        await scraper.close()
         await add_invoices(sales_log_details)
 
         await scrape_transactions(params)
     except Exception as e:
         print(e)
-        return f"Error scraping sales: {str(e)}"
+        raise e
     finally:
+        if scraper:
+            await scraper.close()
         if db_connection:
             await disconnect_db()
 

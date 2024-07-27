@@ -17,22 +17,23 @@ queue = None
 
 logging.basicConfig(level=logging.INFO)
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    await connect_db()
-    # TODO: Clout deployments are extra costs, so we will not use Redis for now
-    # app.state.redis = await redis_connection()
-    # app.state.queue = init_queue()
-    app.state.schedule_id = init_scheduler()
-    try:
-        yield
-    finally:
-        await disconnect_db()
-        remove_scheduler(app.state.schedule_id)
-        # await redis_disconnect(app.state.redis)
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     await connect_db()
+#     # TODO: Clout deployments are extra costs, so we will not use Redis for now
+#     # app.state.redis = await redis_connection()
+#     # app.state.queue = init_queue()
+#     app.state.schedule_id = init_scheduler()
+#     try:
+#         yield
+#     finally:
+#         await disconnect_db()
+#         remove_scheduler(app.state.schedule_id)
+#         # await redis_disconnect(app.state.redis)
 
 
-app = FastAPI(lifespan=lifespan)
+# app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -73,6 +74,16 @@ async def error_handler(request: Request, exc: Union[Exception, str]):
         return Response(status_code=500, content=str(exc))
     else:
         return Response(status_code=400, content=exc)
+
+
+@app.on_event("startup")
+async def on_startup():
+    await connect_db()
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    await disconnect_db()
 
 
 @app.get("/")

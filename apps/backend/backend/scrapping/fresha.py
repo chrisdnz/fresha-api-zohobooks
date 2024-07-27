@@ -8,6 +8,7 @@ from playwright.async_api import async_playwright
 from backend.settings import Config
 from backend.utils.constants import INVOICE_STATUS
 from .html.transactions_operators import extract_data_reports_table, extract_invoice_details
+from .html.data_report_extractor import DataReportExtractor
 
 class FreshaScrapper:
     site_url = 'https://partners.fresha.com'
@@ -24,17 +25,27 @@ class FreshaScrapper:
     async def initialize(self):
         logging.info('Initialization - start')
         playwright = await async_playwright().start()
-        self.browser = await playwright.chromium.launch(headless=True)
+        # self.browser = await playwright.chromium.launch(headless=False)
+        self.browser = await playwright.chromium.connect_over_cdp(Config.BROWSER_PLAYWRIGHT_ENDPOINT)
         await self.restore_session()
         self.page = await self.context.new_page()
         await self.page.goto(f"{self.site_url}/users/sign-in")
-        await self.page.wait_for_load_state("networkidle")
+        try:
+            await self.page.wait_for_selector("[data-qa='header-avatar']", state="visible")
+            logging.info('Already authenticated')
+        except:
+            await self.authenticate()
         logging.info('Initialization - end')
 
     async def authenticate(self):
         logging.info('Log in with Email - start')
-        # Check if the user is already logged in
-        if self.page.url.find('sign-in') != -1:
+        # Wait for any redirects to complete
+        await self.page.wait_for_load_state("networkidle")
+
+        # Check the current URL
+        current_url = self.page.url
+        
+        if 'sign-in' in current_url:
             logging.info('Logging in')
             await self.page.get_by_placeholder("Enter your email address").fill(self.user_email)
             await self.page.get_by_label("Continue").click()
@@ -66,7 +77,9 @@ class FreshaScrapper:
 
         page_content = await self.page.content()
 
-        sale_log_details = extract_data_reports_table(page_content)
+        extractor = DataReportExtractor(["Sale date"], ["Sale no.", "Total sales", "Gift card", "Service charges", "Amount due"])
+        sale_log_details = extractor.extract_data(page_content)
+        # sale_log_details = extract_data_reports_table(page_content)
         filtered_sales = list(filter(lambda sale: sale.get('Sale status', '') == INVOICE_STATUS.get('COMPLETED'), sale_log_details))
 
         sale_details = []
@@ -74,7 +87,7 @@ class FreshaScrapper:
             sale_no = sale.get('Sale no.', '')
             if not sale_no:
                 continue
-            matching_links = self.page.locator(f"//a[contains(text(), '{sale_no}')]")
+            matching_links = self.page.locator(f"//a[contains(@href, '/reports/table/sales-list/drawer/invoice/') and contains(text(), '{sale_no}')]")
 
             count = await matching_links.count()
             if count == 0:
@@ -133,6 +146,7 @@ class FreshaScrapper:
 
         self.context = await self.browser.new_context(
             storage_state=self.session_path,
+            viewport={"width": 1920, "height": 1080},
             locale="en-US"
         )
         logging.info('Restore session - end')
