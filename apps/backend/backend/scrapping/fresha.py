@@ -1,7 +1,8 @@
 import logging
 import os
 import json
-from prisma.models import Invoice
+import re
+from urllib.parse import urlencode
 
 from typing import List
 from playwright.async_api import async_playwright
@@ -25,8 +26,8 @@ class FreshaScrapper:
     async def initialize(self):
         logging.info('Initialization - start')
         playwright = await async_playwright().start()
-        # self.browser = await playwright.chromium.launch(headless=False)
-        self.browser = await playwright.chromium.connect_over_cdp(Config.BROWSER_PLAYWRIGHT_ENDPOINT)
+        self.browser = await playwright.chromium.launch(headless=False)
+        # self.browser = await playwright.chromium.connect_over_cdp(Config.BROWSER_PLAYWRIGHT_ENDPOINT)
         await self.restore_session()
         self.page = await self.context.new_page()
         await self.page.goto(f"{self.site_url}/users/sign-in")
@@ -70,19 +71,51 @@ class FreshaScrapper:
         logging.info('Get payment transactions - end')
         return transactions
     
-    async def get_sales_log_details(self, time_filter: str) -> List[object]:
+    async def get_sales_log_details(self, params: dict) -> List[object]:
         logging.info('Get sales log details - start')
-        await self.page.goto(f"{self.site_url}/reports/table/sales-list{'?shortcut=' + time_filter if time_filter else ''}")
+        
+        query_string = urlencode(params)
+        base_url = f"{self.site_url}/reports/table/sales-list"
+        full_url = f"{base_url}?{query_string}" if query_string else base_url
+        
+        await self.page.goto(full_url)
         await self.page.wait_for_load_state("networkidle")
+
+        async def load_all_data():
+            while True:
+                # Look for the specific span that shows the current number of results
+                results_span = self.page.locator("span[data-qa='table-footer-text']")
+                if await results_span.count() == 0:
+                    break  # No more results to load
+
+                results_text = await results_span.inner_text()
+                match = re.search(r"Showing (\d+) of (\d+) results", results_text)
+                if not match:
+                    break  # Unexpected format, stop loading
+
+                showing, total = map(int, match.groups())
+                if showing == total:
+                    break  # All results are already loaded
+
+                # Look for the "Load more" link
+                load_more_link = self.page.locator("a:has-text('Load') span:has-text('more')")
+                if await load_more_link.count() == 0:
+                    break  # No "Load more" link found
+
+                # Click the "Load more" link
+                await load_more_link.click()
+                await self.page.wait_for_load_state("networkidle")
+    
+        await load_all_data()
 
         page_content = await self.page.content()
 
         extractor = DataReportExtractor(["Sale date"], ["Sale no.", "Total sales", "Gift card", "Service charges", "Amount due"])
         sale_log_details = extractor.extract_data(page_content)
-        # sale_log_details = extract_data_reports_table(page_content)
         filtered_sales = list(filter(lambda sale: sale.get('Sale status', '') == INVOICE_STATUS.get('COMPLETED'), sale_log_details))
 
         sale_details = []
+        # load_morex/_element = self.page.locator("text=Load \\d+ more")
         for sale in filtered_sales:
             sale_no = sale.get('Sale no.', '')
             if not sale_no:
@@ -105,6 +138,7 @@ class FreshaScrapper:
                     invoice_details.update(sale)
                     sale_details.append(invoice_details)
         
+
         logging.info('Get sales log details - end')
         transformed_sales = []
         for sale in sale_details:

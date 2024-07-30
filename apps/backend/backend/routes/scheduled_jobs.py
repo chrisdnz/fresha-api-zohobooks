@@ -29,9 +29,13 @@ async def queue_sales(request: Request, time_filter: str = Query(None)) :
     #     "signature": signature,
     #     "body": body
     # })
-    time_filter = request.query_params.get("time_filter")
+    time_filter = request.query_params.get("shortcut")
+    date_from = request.query_params.get("dateFrom")
+    date_to = request.query_params.get("dateTo")
     await async_task_sales_logs({
-        "time_filter": time_filter
+        "shortcut": time_filter,
+        "dateFrom": date_from,
+        "dateTo": date_to
     })
 
     return {"message": "Sales log has been processed"}
