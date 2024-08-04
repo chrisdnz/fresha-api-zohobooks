@@ -33,6 +33,11 @@ class FreshaScrapper:
         await self.page.goto(f"{self.site_url}/users/sign-in")
         try:
             await self.page.wait_for_selector("[data-qa='header-avatar']", state="visible")
+            
+            # click cookies button, data-qa="cookie-accept-btn"
+            cookies_button = self.page.locator("[data-qa='cookie-accept-btn']")
+            if await cookies_button.count() > 0:
+                await cookies_button.click()
             logging.info('Already authenticated')
         except:
             await self.authenticate()
