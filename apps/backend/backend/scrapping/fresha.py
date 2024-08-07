@@ -66,14 +66,43 @@ class FreshaScrapper:
             logging.info('Already logged in')
         logging.info('Log in with Email - end')
 
+    async def load_all_data(self):
+        while True:
+            # Look for the specific span that shows the current number of results
+            results_span = self.page.locator("span[data-qa='table-footer-text']")
+            if await results_span.count() == 0:
+                break  # No more results to load
+
+            results_text = await results_span.inner_text()
+            match = re.search(r"Showing (\d+) of (\d+) results", results_text)
+            if not match:
+                break  # Unexpected format, stop loading
+
+            showing, total = map(int, match.groups())
+            if showing == total:
+                break  # All results are already loaded
+
+            # Look for the "Load more" link
+            load_more_link = self.page.locator("a:has-text('Load') span:has-text('more')")
+            if await load_more_link.count() == 0:
+                break  # No "Load more" link found
+
+            # Click the "Load more" link
+            await load_more_link.click()
+            await self.page.wait_for_load_state("networkidle")
+
     async def get_payment_transactions(self, time_filter: str):
         logging.info('Get payment transactions - start')
         await self.page.goto(f"{self.site_url}/reports/table/payment-transactions{'?shortcut=' + time_filter if time_filter else ''}")
         await self.page.wait_for_load_state("networkidle")
 
+        await self.load_all_data()
+
         page_content = await self.page.content()
 
-        transactions = extract_data_reports_table(page_content)
+        extractor = DataReportExtractor(["Payment date", "Sale date"], ["Payment no.", "Sale no.", "Payment amount"])
+        transactions = extractor.extract_data(page_content)
+        # transactions = extract_data_reports_table(page_content)
         logging.info('Get payment transactions - end')
         return transactions
     
@@ -86,33 +115,8 @@ class FreshaScrapper:
         
         await self.page.goto(full_url)
         await self.page.wait_for_load_state("networkidle")
-
-        async def load_all_data():
-            while True:
-                # Look for the specific span that shows the current number of results
-                results_span = self.page.locator("span[data-qa='table-footer-text']")
-                if await results_span.count() == 0:
-                    break  # No more results to load
-
-                results_text = await results_span.inner_text()
-                match = re.search(r"Showing (\d+) of (\d+) results", results_text)
-                if not match:
-                    break  # Unexpected format, stop loading
-
-                showing, total = map(int, match.groups())
-                if showing == total:
-                    break  # All results are already loaded
-
-                # Look for the "Load more" link
-                load_more_link = self.page.locator("a:has-text('Load') span:has-text('more')")
-                if await load_more_link.count() == 0:
-                    break  # No "Load more" link found
-
-                # Click the "Load more" link
-                await load_more_link.click()
-                await self.page.wait_for_load_state("networkidle")
     
-        await load_all_data()
+        await self.load_all_data()
 
         page_content = await self.page.content()
 

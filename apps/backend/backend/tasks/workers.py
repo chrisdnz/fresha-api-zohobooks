@@ -7,7 +7,7 @@ from backend.database.prisma.connection import connect_db, disconnect_db
 
 async def scrape_transactions(params: dict):
     try:
-        time_filter = params.get('time_filter', '')
+        time_filter = params.get('shortcut', '')
         db_connection = params.get('db_connection', False)
         if db_connection:
             await connect_db()
