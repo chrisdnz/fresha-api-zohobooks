@@ -139,7 +139,7 @@ async def create_invoices_from_dummy(request: Request):
         'order': {'id': 'asc'}
     })
     access_token = request.headers.get("Authorization")
-    zoho_invoices = get_zoho_invoices(access_token)['invoices']
+    zoho_invoices = get_zoho_invoices(access_token, 'draft')['invoices']
     if zoho_invoices:
         last_invoice_number = zoho_invoices[0]['invoice_number']
     else:

@@ -29,9 +29,10 @@ def create_contact(access_token, contact_data):
 
     return response.json()
 
-def get_inovoices(access_token):
+def get_inovoices(access_token, status: str = 'unpaid'):
     invoices = requests.get(f'{zoho_api}/invoices', params=custom_urlencode({
-        'organization_id': Config.ZOHO_ORGANIZATION_ID
+        'organization_id': Config.ZOHO_ORGANIZATION_ID,
+        'status': status
     }), headers={
         'Authorization': f'Bearer {access_token}'
     })
