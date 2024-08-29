@@ -26,7 +26,7 @@ class FreshaScrapper:
     async def initialize(self):
         logging.info('Initialization - start')
         playwright = await async_playwright().start()
-        self.browser = await playwright.chromium.launch(headless=False)
+        self.browser = await playwright.chromium.launch(headless=True)
         # TODO: This is still not working
         # self.browser = await playwright.chromium.connect_over_cdp(Config.BROWSER_PLAYWRIGHT_ENDPOINT)
         await self.restore_session()
