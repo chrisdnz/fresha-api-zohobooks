@@ -119,15 +119,16 @@ def extract_invoice_details(html_content):
     invoice_text = next((element.text for element in invoice_title_element if 'Invoice' in element.text), None)
     payment_span = soup.find('span', attrs={'data-qa': 'invoice-payment-name'})
     change_span = soup.find('span', attrs={'data-qa': 'change-value'})
+    created_at = soup.find('p', attrs={'data-qa': 'pos-summary-invoice-created-at'}).text.split('・')
     invoice_details = {
         'invoice_number': re.findall(r'\d+', invoice_text), 
-        'created_at': to_datetime(soup.find('p', attrs={'data-qa': 'pos-summary-invoice-created-at'}).text.split('・')[0].strip(), "%a %d %b %Y"),
+        'created_at': to_datetime(created_at[0].strip(), "%a %d %b %Y"),
         'items': [],
         'subtotal': extract_amount(soup.find('span', attrs={'data-qa': 'pos-summary-subtotal-price'}).text),
         'total': extract_amount(soup.find('span', attrs={'data-qa': 'pos-summary-total-price'}).text),
-        'payment_method': payment_span.find_all('p')[1].text.strip(),
-        'payment_date': to_datetime(payment_span.find_next_sibling('span').text.strip(), "%a %d %b %Y at %I:%M%p"),
-        'payment_amount': extract_amount(soup.find('span', attrs={'data-qa': 'invoice-payment-price'}).text),
+        'payment_method': payment_span.find_all('p')[1].text.strip() if payment_span else '',
+        'payment_date': to_datetime(payment_span.find_next_sibling('span').text.strip(), "%a %d %b %Y at %I:%M%p") if payment_span else None,
+        'payment_amount': extract_amount(soup.find('span', attrs={'data-qa': 'invoice-payment-price'}).text) if payment_span else None,
         'change': extract_amount(change_span.text) if change_span else None,
     }
 

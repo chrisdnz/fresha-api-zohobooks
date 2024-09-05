@@ -2,6 +2,7 @@ import logging
 import os
 import json
 import re
+import asyncio
 from urllib.parse import urlencode
 
 from typing import List
@@ -90,6 +91,7 @@ class FreshaScrapper:
             # Click the "Load more" link
             await load_more_link.click()
             await self.page.wait_for_load_state("networkidle")
+            await asyncio.sleep(2)
 
     async def get_payment_transactions(self, time_filter: str):
         logging.info('Get payment transactions - start')
