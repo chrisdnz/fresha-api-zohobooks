@@ -35,6 +35,7 @@ async def update_invoice(invoice: dict):
 
 async def get_unpaid_invoices():
     return await prisma.invoice.find_many(
+        order={'id': 'asc'},
         where={'status': 'UNPAID'}
     )
 
