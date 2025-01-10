@@ -3,7 +3,9 @@ import Zoho from 'next-auth/providers/zoho';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [Zoho({
-    authorization: "https://accounts.zoho.com/oauth/v2/auth?scope=ZohoBooks.fullaccess.all"
+    authorization: "https://accounts.zoho.com/oauth/v2/auth?scope=ZohoBooks.fullaccess.all",
+    clientId: process.env.ZOHO_CLIENT_ID,
+    clientSecret: process.env.ZOHO_CLIENT_SECRET,
   })],
   callbacks: {
     jwt({ token, account, user }) {
