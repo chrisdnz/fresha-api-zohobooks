@@ -151,11 +151,24 @@ async def create_invoices_from_dummy(request: Request):
 
     for invoice in invoices:
         contact = get_contacts(access_token, invoice.customer.name)
-        contact_id = contact['contacts'][0]['contact_id'] if len(contact['contacts']) > 0 else None
+        contact_id = None
+        if len(contact['contacts']) > 0:
+            contact_details = contact['contacts'][0]
+            if contact_details.get('contact_type') == 'vendor':
+                # Create a new customer contact if existing contact is a vendor
+                contact = create_contact(access_token, {
+                    'contact_name': invoice.customer.name,
+                    'contact_type': 'customer'
+                })['contact']
+                contact_id = contact['contact_id']
+            else:
+                contact_id = contact_details['contact_id']
+                
         if not contact_id:
             print(f"Contact {invoice.customer.name} not found in Zoho")
             contact = create_contact(access_token, {
                 'contact_name': invoice.customer.name,
+                'contact_type': 'customer'
             })['contact']
             contact_id = contact['contact_id']
 
