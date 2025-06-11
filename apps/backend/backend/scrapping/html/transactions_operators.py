@@ -119,10 +119,11 @@ def extract_invoice_details(html_content):
     invoice_text = next((element.text for element in invoice_title_element if 'Invoice' in element.text), None)
     payment_span = soup.find('span', attrs={'data-qa': 'invoice-payment-name'})
     change_span = soup.find('span', attrs={'data-qa': 'change-value'})
-    created_at = soup.find('p', attrs={'data-qa': 'pos-summary-invoice-created-at'}).text.split('・')
+    created_at_text = soup.find('p', attrs={'data-qa': 'pos-summary-invoice-created-at'}).text
+    created_at = re.search(r'([A-Za-z]+ \d+ [A-Za-z]+ \d{4})', created_at_text).group(1)
     invoice_details = {
         'invoice_number': re.findall(r'\d+', invoice_text), 
-        'created_at': to_datetime(created_at[0].strip(), "%a %d %b %Y"),
+        'created_at': to_datetime(created_at.strip(), "%a %d %b %Y"),
         'items': [],
         'subtotal': extract_amount(soup.find('span', attrs={'data-qa': 'pos-summary-subtotal-price'}).text),
         'total': extract_amount(soup.find('span', attrs={'data-qa': 'pos-summary-total-price'}).text),
